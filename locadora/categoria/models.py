@@ -16,8 +16,7 @@ class Categoria(models.Model):
         ('custom', '✏️ Personalizado (digite abaixo)'),
     ]
     
-    
-    # Dois campos: um para seleção e outro para customizado
+
     icone_tipo = models.CharField(
         max_length=10,
         choices=EMOJI_CHOICES,

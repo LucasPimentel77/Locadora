@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "categoria",
+    "carros",
 ]
 
 # MIDDLEWARE ORIGINAL - REATIVE O CSRF

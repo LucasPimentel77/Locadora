@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     path("", views.categorias, name="categorias"),
+    path("<slug:categoria_slug>/", views.categoria_detalhe, name="categoria_detalhe"),
 ]
 
 if settings.DEBUG:

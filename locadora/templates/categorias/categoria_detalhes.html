@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ categoria.nome }} - Locadora SpeedCar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- COLUNA DE FILTROS (ESQUERDA) -->
+        <div class="col-lg-3 col-md-4">
+            <div class="bg-light rounded-3 p-4 sticky-top" style="top: 20px;">
+                <h5 class="fw-bold text-primary mb-4">Filtros</h5>
+                
+                <!-- Filtro por Marca -->
+                <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">Marca</h6>
+                    {% for marca in marcas %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="marca{{ forloop.counter }}">
+                        <label class="form-check-label" for="marca{{ forloop.counter }}">
+                            {{ marca }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Filtro por Disponibilidade -->
+                <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">Disponibilidade</h6>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="disponivel" checked>
+                        <label class="form-check-label" for="disponivel">
+                            Disponível agora
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="reservado">
+                        <label class="form-check-label" for="reservado">
+                            Disponível em breve
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Filtro por Preço -->
+                <div class="mb-4">
+                    <h6 class="fw-semibold mb-3">Preço Diária</h6>
+                    <input type="range" class="form-range" min="0" max="500" step="10" id="precoRange">
+                    <div class="d-flex justify-content-between">
+                        <small>R$ 0</small>
+                        <small>R$ 500</small>
+                    </div>
+                </div>
+
+                <!-- Botão Aplicar Filtros -->
+                <button class="btn btn-primary w-100 mt-3">
+                    <i class="fas fa-filter me-2"></i>Aplicar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL (DIREITA) -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Cabeçalho da Categoria -->
+            <div class="row mb-5">
+                <div class="col">
+                    <h1 class="fw-bold text-primary">{{ categoria.icone }} {{ categoria.nome }}</h1>
+                    <p class="lead text-muted">{{ categoria.descricao }}</p>
+                </div>
+            </div>
+
+            <!-- SUBGRUPOS DA CATEGORIA -->
+            {% for subgrupo in subgrupos %}
+            <div class="card border-0 shadow-sm mb-5">
+                <div class="card-body">
+                    <!-- Cabeçalho do Subgrupo -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold text-primary">{{ subgrupo.nome }}</h3>
+                            <p class="text-muted mb-2">{{ subgrupo.descricao }}</p>
+                            <span class="badge bg-warning text-dark fs-6">
+                                A partir de R$ {{ subgrupo.preco_diaria }}/dia
+                            </span>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="text-muted">{{ subgrupo.total_carros }} carros disponíveis</span>
+                        </div>
+                    </div>
+
+                    <!-- Carousel de Carros do Subgrupo -->
+                    <div class="position-relative">
+                        <div class="carousel-container" style="overflow-x: auto; scroll-behavior: smooth;" id="carousel{{ forloop.counter }}">
+                            <div class="d-flex gap-3 pb-3">
+                                {% for carro in subgrupo.carros %}
+                                <div class="flex-shrink-0" style="width: 280px;">
+                                    <div class="card car-card border-0 shadow-sm h-100">
+                                        {% if carro.imagem %}
+                                        <img src="{{ carro.imagem.url }}" 
+                                             class="card-img-top" 
+                                             alt="{{ carro.marca }} {{ carro.nome }}"
+                                             style="height: 180px; object-fit: cover;">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h6 class="card-title fw-bold">{{ carro.marca }} {{ carro.nome }}</h6>
+                                            <p class="card-text text-muted small">{{ carro.ano }} • {{ carro.placa }}</p>
+                                            <div class="car-features mb-3">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-users me-1"></i>{{ carro.capacidade }} • 
+                                                    <i class="fas fa-snowflake me-1"></i>Ar • 
+                                                    <i class="fas fa-gas-pump me-1"></i>{{ carro.combustivel }}
+                                                </small>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="h6 text-primary fw-bold mb-0">R$ </span>
+                                                <button class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-eye me-1"></i>Ver
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Setas de Navegação (apenas se tiver mais de 4 carros) -->
+                        {% if subgrupo.carros|length > 4 %}
+                        <button class="carousel-prev btn btn-light rounded-circle position-absolute top-50 start-0 translate-middle-y"
+                                onclick="scrollCarousel('carousel{{ forloop.counter }}', -280)"
+                                style="left: -20px;">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-next btn btn-light rounded-circle position-absolute top-50 end-0 translate-middle-y"
+                                onclick="scrollCarousel('carousel{{ forloop.counter }}', 280)"
+                                style="right: -20px;">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scrollCarousel(carouselId, distance) {
+    const carousel = document.getElementById(carouselId);
+    carousel.scrollBy({ left: distance, behavior: 'smooth' });
+}
+
+// JavaScript para os filtros
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtro de preço
+    const priceRange = document.getElementById('precoRange');
+    if (priceRange) {
+        priceRange.addEventListener('input', function() {
+            // Aqui você implementaria a lógica de filtro
+            console.log('Preço selecionado:', this.value);
+        });
+    }
+});
+</script>
+
+<style>
+.carousel-container {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.carousel-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.carousel-prev, .carousel-next {
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.car-card {
+    transition: transform 0.3s ease;
+}
+
+.car-card:hover {
+    transform: translateY(-5px);
+}
+
+.sticky-top {
+    position: sticky;
+}
+</style>
+{% endblock %}
