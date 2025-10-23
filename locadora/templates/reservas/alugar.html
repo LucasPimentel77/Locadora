@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Alugar Carro - Locadora SpeedCar{% endblock %}
+
+{% block extra_css %}
+<!-- CSS específico para a página de aluguel -->
+<link rel="stylesheet" href="{% static 'css/alugar.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Cabeçalho -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h1 class="display-5 fw-bold text-primary">Aluguel de Carros</h1>
+            <p class="lead text-muted">Escolha as datas e encontre o carro perfeito para você</p>
+        </div>
+    </div>
+
+    <!-- Formulário de Datas -->
+    <div class="card shadow-sm mb-5 alugar-card">
+        <div class="card-body p-4">
+            <form id="form-datas">
+                <div class="row g-4">
+                    <!-- Data/Hora Retirada -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Retirada</label>
+                        <div class="row g-2">
+                            <div class="col-8">
+                                <input type="date" class="form-control" id="data_retirada" required>
+                            </div>
+                            <div class="col-4">
+                                <select class="form-select" id="hora_retirada" required>
+                                    <option value="">Hora</option>
+                                    {% for horario in horarios%}
+                                        <option value="{{horario}}">{{horario}}</option>
+                                    {% endfor %}    
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data/Hora Devolução -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Devolução </label>
+                        <div class="row g-2">
+                            <div class="col-8">
+                                <input type="date" class="form-control" id="data_devolucao" required>
+                            </div>
+                            <div class="col-4">
+                                <select class="form-select" id="hora_devolucao" required>
+                                    <option value="">Hora</option>
+                                    {% for horario in horarios%}
+                                        <option value="{{horario}}">{{horario}}</option>
+                                    {% endfor %} 
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cupom -->
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Cupom de Desconto</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="cupom" placeholder="Digite seu cupom">
+                            <button type="button" class="btn btn-outline-primary" id="btn-verificar-cupom">
+                                Verificar
+                            </button>
+                        </div>
+                        <div id="mensagem-cupom" class="mt-2"></div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100 alugar-btn-primary" id="btn-verificar-disponibilidade">
+                            <i class="fas fa-search me-2"></i>Verificar Disponibilidade
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <!-- Resultados - Subgrupos Disponíveis -->
+    <div id="resultados" class="d-none">
+        <h2 class="fw-bold text-primary mb-4">Subgrupos Disponíveis</h2>
+        
+
+        <div class="row g-4">
+            {% for subgrupos in subgrupos_disponiveis %}
+            <!-- Subgrupos Disponíveis (Estáticos) -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100 disponivel alugar-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="card-title fw-bold text-primary">🚙 Hatch Compacto {{cont}} a</h4>
+                                <p class="text-muted mb-2">Carros compactos e econômicos, perfeitos para a cidade.</p>
+                            </div>
+                            <span class="badge bg-success fs-6">5 disponíveis</span>
+                        </div>
+
+                        <!-- Características -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>5 passageiros • 
+                                <i class="fas fa-snowflake me-1"></i>Ar-condicionado • 
+                                <i class="fas fa-gas-pump me-1"></i>Flex
+                            </small>
+                        </div>
+
+                        <!-- Preço e Ação -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="h4 text-primary fw-bold">R$ 70</span>
+                                <small class="text-muted d-block">/ dia</small>
+                            </div>
+                            <button class="btn btn-primary alugar-btn-primary">Escolher Carro</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- ... (restante dos cards igual antes) ... -->
+
+        </div>
+    </div>
+
+    <!-- Mensagem inicial -->
+    <div id="sem-resultados" class="text-center py-5">
+        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">Selecione as datas para ver a disponibilidade</h4>
+        <p class="text-muted">Escolha a data e hora de retirada e devolução para encontrar carros disponíveis.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript específico para a página de aluguel -->
+<script src="{% static 'js/alugar.js' %}"></script>
+{% endblock %}

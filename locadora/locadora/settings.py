@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "categoria",
     "carros",
+    "reserva",
 ]
 
 # MIDDLEWARE ORIGINAL - REATIVE O CSRF
