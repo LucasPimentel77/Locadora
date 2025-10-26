@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Escolher {{ grupo.nome }} - Locadora SpeedCar{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/escolher_grupo.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'alugar' %}">Alugar Carro</a></li>
+                    <li class="breadcrumb-item active">{{ grupo.nome }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações do Grupo -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            {% if grupo.carros_disponiveis.first and grupo.carros_disponiveis.first.imagem %}
+                                <img src="{{ grupo.carros_disponiveis.first.imagem.url }}" 
+                                     class="img-fluid rounded" alt="{{ grupo.nome }}"
+                                     style="max-height: 200px; object-fit: contain;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="height: 200px;">
+                                    <i class="fas fa-car fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h1 class="h3 fw-bold text-primary">{{ grupo.icone }} {{ grupo.nome }}</h1>
+                            <p class="text-muted mb-3">{{ grupo.descricao }}</p>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-car me-2"></i>
+                                        <strong>{{ total_carros }}</strong> carros disponíveis
+                                    </small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-2"></i>
+                                        {{ grupo.capacidade_padrao }} passageiros
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <h4 class="text-primary fw-bold">R$ {{ grupo.preco_diaria }}</h4>
+                                <small class="text-muted">por dia</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Características -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Características</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Ar-condicionado
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Direção hidráulica
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Vidros elétricos
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Travas elétricas
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Airbag
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Combustível: {{ grupo.combustivel_padrao }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forma de Pagamento -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Forma de Pagamento</h5>
+                </div>
+                <div class="card-body">
+                    <form id="form-pagamento" method="POST" action="#">
+                        {% csrf_token %}
+                        
+                        <!-- Opções de Pagamento -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Escolha como pagar:</h6>
+                            
+                            {% for forma in formas_pagamento %}
+                            <div class="form-check mb-3 border rounded p-3 forma-pagamento-option">
+                                <input class="form-check-input" type="radio" 
+                                       name="forma_pagamento" id="pagamento-{{ forma.tipo }}" 
+                                       value="{{ forma.tipo }}" required
+                                       {% if forloop.first %}checked{% endif %}>
+                                <label class="form-check-label w-100" for="pagamento-{{ forma.tipo }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="{{ forma.icone }} me-2"></i>
+                                            <strong>{{ forma.nome }}</strong>
+                                        </div>
+                                        {% if forma.desconto %}
+                                        <span class="badge bg-success">-{{ forma.desconto }}%</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted d-block mt-1">{{ forma.descricao }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Resumo do Valor -->
+                        <div class="border-top pt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Diária:</span>
+                                <span>R$ {{ grupo.preco_diaria }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Taxas e impostos:</span>
+                                <span>R$ 25,00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
+                                <span>Total:</span>
+                                <span id="total-final">R$ {{ grupo.preco_diaria|add:25 }}</span>
+                            </div>
+                            
+                            <!-- Desconto PIX (dinâmico) -->
+                            <div class="mt-2 text-success d-none" id="desconto-pix">
+                                <small>
+                                    <i class="fas fa-tag me-1"></i>
+                                    Desconto PIX aplicado: <strong id="valor-desconto">-R$ 0,00</strong>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Botão de Confirmação -->
+                        <button type="submit" class="btn btn-primary w-100 mt-4 py-2">
+                            <i class="fas fa-check me-2"></i>
+                            Confirmar Reserva
+                        </button>
+                        
+                        <small class="text-muted d-block text-center mt-2">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Reserva 100% segura
+                        </small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<input type="hidden" id="diaria-value" data-value="{{ grupo.preco_diaria }}">
+
+<script src="{% static 'js/escolher_grupo.js' %}"></script>
+{% endblock %}

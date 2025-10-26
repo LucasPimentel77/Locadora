@@ -4,11 +4,31 @@
 {% block title %}Alugar Carro - Locadora SpeedCar{% endblock %}
 
 {% block extra_css %}
-<!-- CSS específico para a página de aluguel -->
 <link rel="stylesheet" href="{% static 'css/alugar.css' %}">
 {% endblock %}
 
 {% block content %}
+
+<!-- DEBUG VISUAL -->
+<div style="background: #e9ecef; padding: 15px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff;">
+    <h5>🔍 DEBUG DO TEMPLATE</h5>
+    <p><strong>Método da requisição:</strong> {{ request.method }}</p>
+    <p><strong>Foi submetido:</strong> {{ foi_submetido }}</p>
+    <p><strong>Subgrupos disponíveis:</strong> {{ subgrupos_disponiveis|length }}</p>
+    <p><strong>Subgrupos indisponíveis:</strong> {{ subgrupos_indisponiveis|length }}</p>
+    
+    {% if subgrupos_disponiveis %}
+        <p><strong>Subgrupos disponíveis encontrados:</strong></p>
+        <ul>
+        {% for subgrupo in subgrupos_disponiveis %}
+            <li>{{ subgrupo.nome }} - {{ subgrupo.carros_disponiveis }} carros</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p><strong>Nenhum subgrupo disponível na lista</strong></p>
+    {% endif %}
+</div>
+
 <div class="container py-5">
     <!-- Cabeçalho -->
     <div class="row mb-5">
@@ -21,20 +41,26 @@
     <!-- Formulário de Datas -->
     <div class="card shadow-sm mb-5 alugar-card">
         <div class="card-body p-4">
-            <form id="form-datas">
+            <!-- FORM CORRETO: method="POST" e csrf_token -->
+            <form method="POST" id="form-datas">
+                {% csrf_token %}
+                
                 <div class="row g-4">
                     <!-- Data/Hora Retirada -->
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Retirada</label>
                         <div class="row g-2">
                             <div class="col-8">
-                                <input type="date" class="form-control" id="data_retirada" required>
+                                <input type="date" class="form-control" id="data_retirada" name="data_retirada" required 
+                                       value="{{ data_retirada_form }}" min="{{ data_hoje|date:'Y-m-d' }}">
                             </div>
                             <div class="col-4">
-                                <select class="form-select" id="hora_retirada" required>
+                                <select class="form-select" id="hora_retirada" name="hora_retirada" required>
                                     <option value="">Hora</option>
-                                    {% for horario in horarios%}
-                                        <option value="{{horario}}">{{horario}}</option>
+                                    {% for horario in horarios %}
+                                        <option value="{{ horario }}" {% if hora_retirada_form == horario %}selected{% endif %}>
+                                            {{ horario }}
+                                        </option>
                                     {% endfor %}    
                                 </select>
                             </div>
@@ -43,16 +69,19 @@
 
                     <!-- Data/Hora Devolução -->
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Devolução </label>
+                        <label class="form-label fw-semibold">Devolução</label>
                         <div class="row g-2">
                             <div class="col-8">
-                                <input type="date" class="form-control" id="data_devolucao" required>
+                                <input type="date" class="form-control" id="data_devolucao" name="data_devolucao" required
+                                       value="{{ data_devolucao_form }}" min="{{ data_hoje|date:'Y-m-d' }}">
                             </div>
                             <div class="col-4">
-                                <select class="form-select" id="hora_devolucao" required>
+                                <select class="form-select" id="hora_devolucao" name="hora_devolucao" required>
                                     <option value="">Hora</option>
-                                    {% for horario in horarios%}
-                                        <option value="{{horario}}">{{horario}}</option>
+                                    {% for horario in horarios %}
+                                        <option value="{{ horario }}" {% if hora_devolucao_form == horario %}selected{% endif %}>
+                                            {{ horario }}
+                                        </option>
                                     {% endfor %} 
                                 </select>
                             </div>
@@ -65,7 +94,8 @@
                     <div class="col-md-8">
                         <label class="form-label fw-semibold">Cupom de Desconto</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="cupom" placeholder="Digite seu cupom">
+                            <input type="text" class="form-control" id="cupom" name="cupom" placeholder="Digite seu cupom"
+                                   value="{{ cupom_form }}">
                             <button type="button" class="btn btn-outline-primary" id="btn-verificar-cupom">
                                 Verificar
                             </button>
@@ -73,7 +103,7 @@
                         <div id="mensagem-cupom" class="mt-2"></div>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
-                        <button type="button" class="btn btn-primary w-100 alugar-btn-primary" id="btn-verificar-disponibilidade">
+                        <button type="submit" class="btn btn-primary w-100 alugar-btn-primary" id="btn-verificar-disponibilidade">
                             <i class="fas fa-search me-2"></i>Verificar Disponibilidade
                         </button>
                     </div>
@@ -82,55 +112,91 @@
         </div>
     </div>
 
-    
     <!-- Resultados - Subgrupos Disponíveis -->
-    <div id="resultados" class="d-none">
-        <h2 class="fw-bold text-primary mb-4">Subgrupos Disponíveis</h2>
-        
+    <div id="resultados" class="{% if foi_submetido %}{% else %}d-none{% endif %}">
+        <h2 class="fw-bold text-primary mb-4">
+            {% if foi_submetido %}
+                {% if subgrupos_disponiveis %}Subgrupos Disponíveis{% else %}Resultados da Busca{% endif %}
+            {% else %}
+                Subgrupos Disponíveis
+            {% endif %}
+        </h2>
 
         <div class="row g-4">
-            {% for subgrupos in subgrupos_disponiveis %}
-            <!-- Subgrupos Disponíveis (Estáticos) -->
-            <div class="col-lg-6">
-                <div class="card border-0 shadow-sm h-100 disponivel alugar-card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h4 class="card-title fw-bold text-primary">🚙 Hatch Compacto {{cont}} a</h4>
-                                <p class="text-muted mb-2">Carros compactos e econômicos, perfeitos para a cidade.</p>
-                            </div>
-                            <span class="badge bg-success fs-6">5 disponíveis</span>
+            {% if foi_submetido %}
+                <!-- Só mostra resultados se o formulário foi submetido -->
+                {% for subgrupo in subgrupos_disponiveis %}
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm h-100 disponivel alugar-card">
+                        <!-- IMAGEM DE CAPA -->
+                        {% if subgrupo.imagem %}
+                        <img src="{{ subgrupo.imagem }}" class="card-img-top" alt="{{ subgrupo.nome }}" style="height: 200px; object-fit: contain;object-position: center">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-car fa-3x text-muted"></i>
                         </div>
-
-                        <!-- Características -->
-                        <div class="mb-3">
-                            <small class="text-muted">
-                                <i class="fas fa-users me-1"></i>5 passageiros • 
-                                <i class="fas fa-snowflake me-1"></i>Ar-condicionado • 
-                                <i class="fas fa-gas-pump me-1"></i>Flex
-                            </small>
-                        </div>
-
-                        <!-- Preço e Ação -->
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="h4 text-primary fw-bold">R$ 70</span>
-                                <small class="text-muted d-block">/ dia</small>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="card-title fw-bold text-primary">
+                                       {{subgrupo.icone}} {{ subgrupo.nome }}
+                                    </h4>
+                                    <small class="text-muted">
+                                    {% for carro in subgrupo.carros_subgrupo %}
+                                        {{ carro.nome }}{% if not forloop.last %} | {% endif %}
+                                    {% endfor %}
+                                </small> 
+                                </div>
+                                <span class="badge bg-success fs-6">{{ subgrupo.carros_disponiveis }} disponíveis</span>
                             </div>
-                            <button class="btn btn-primary alugar-btn-primary">Escolher Carro</button>
+
+                            <!-- Características -->
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>5 passageiros • 
+                                    <i class="fas fa-snowflake me-1"></i>Ar-condicionado • 
+                                    <i class="fas fa-gas-pump me-1"></i>Flex
+                                </small>
+                            </div>
+
+                            <!-- Preço e Ação -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="h4 text-primary fw-bold">R$ {{ subgrupo.preco_diaria }}</span>
+                                    <small class="text-muted d-block">/ dia</small>
+                                </div>
+                                <a href="{% url 'escolher_grupo' subgrupo.slug %}" class="btn btn-primary alugar-btn-primary">
+                                    Escolher Grupo
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-
-            <!-- ... (restante dos cards igual antes) ... -->
-
+                {% empty %}
+                <!-- Só mostra "nenhum disponível" se foi submetido e não encontrou nada -->
+                <div class="col-12">
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <h4>Nenhum carro disponível para as datas selecionadas</h4>
+                        <p class="mb-0">Tente alterar as datas ou horários de retirada/devolução.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Mensagem enquanto não busca -->
+                <div class="col-12">
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Preencha as datas acima e clique em "Verificar Disponibilidade"</p>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Mensagem inicial -->
-    <div id="sem-resultados" class="text-center py-5">
+    <!-- Mensagem inicial - só mostra quando NÃO foi submetido -->
+    <div id="sem-resultados" class="text-center py-5 {% if foi_submetido %}d-none{% endif %}">
         <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
         <h4 class="text-muted">Selecione as datas para ver a disponibilidade</h4>
         <p class="text-muted">Escolha a data e hora de retirada e devolução para encontrar carros disponíveis.</p>
@@ -139,6 +205,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- JavaScript específico para a página de aluguel -->
 <script src="{% static 'js/alugar.js' %}"></script>
 {% endblock %}

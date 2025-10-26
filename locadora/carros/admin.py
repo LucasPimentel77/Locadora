@@ -4,7 +4,7 @@ from .models import Carro, GrupoCarro
 # Register your models here.
 
 class CarroAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'marca', 'ano', 'placa', 'disponivel', 'grupo')
+    list_display = ('nome', 'marca', 'grupo', 'imagem' ,'disponivel')
     search_fields = ('nome', 'marca', 'placa')
     list_filter = ('disponivel', 'grupo__categoria')
 

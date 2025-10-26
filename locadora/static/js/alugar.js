@@ -1,22 +1,25 @@
-// static/js/alugar.js
+// static/js/alugar.js - VERSÃO CORRIGIDA
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("✅ JavaScript carregado!");
+
     // Configurar data mínima como hoje
     const hoje = new Date().toISOString().split('T')[0];
     document.getElementById('data_retirada').min = hoje;
     document.getElementById('data_devolucao').min = hoje;
 
-    // Validar datas
+    // Quando a data de retirada muda, atualiza a mínima da devolução
     document.getElementById('data_retirada').addEventListener('change', function() {
         const dataDevolucao = document.getElementById('data_devolucao');
         dataDevolucao.min = this.value;
         
+        // Se a data de devolução for anterior, corrige
         if (dataDevolucao.value && dataDevolucao.value < this.value) {
             dataDevolucao.value = this.value;
         }
     });
 
-    // Verificar cupom
+    // Verificar cupom (funcionalidade independente)
     document.getElementById('btn-verificar-cupom').addEventListener('click', function() {
         const cupom = document.getElementById('cupom').value;
         const mensagem = document.getElementById('mensagem-cupom');
@@ -35,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Cupons válidos estáticos
         const cuponsValidos = ['SPEED10', 'PRIMEIRALOCACAO', 'DESCONTO15'];
         
-        // Simular delay de rede
+        // Simular verificação
         setTimeout(function() {
             if (cuponsValidos.includes(cupom.toUpperCase())) {
                 mensagem.innerHTML = '<small class="text-success"><i class="fas fa-check me-1"></i>Cupom válido! Desconto aplicado.</small>';
@@ -49,14 +52,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     });
 
-    // VALIDAÇÃO ANTES DO ENVIO DO FORMULÁRIO
+    // VALIDAÇÃO DO FORMULÁRIO ANTES DE ENVIAR
     document.getElementById('form-datas').addEventListener('submit', function(e) {
+        console.log("🔄 Formulário sendo validado...");
+        
         const dataRetirada = document.getElementById('data_retirada').value;
         const dataDevolucao = document.getElementById('data_devolucao').value;
         const horaRetirada = document.getElementById('hora_retirada').value;
         const horaDevolucao = document.getElementById('hora_devolucao').value;
 
-        // Validações
+        // Validações básicas
         if (!dataRetirada || !dataDevolucao || !horaRetirada || !horaDevolucao) {
             e.preventDefault();
             showAlert('Por favor, preencha todas as datas e horários.', 'danger');
@@ -73,23 +78,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Validar se não é no passado
-        const agora = new Date();
-        agora.setHours(0, 0, 0, 0); // Considera apenas a data, não a hora
-        
-        if (dtRetirada < agora) {
-            e.preventDefault();
-            showAlert('A data de retirada não pode ser no passado.', 'warning');
-            return;
-        }
-
-        // Se todas as validações passarem, mostrar loading
+        // Se passou todas as validações, mostrar loading
+        console.log("✅ Validações passadas - enviando formulário...");
         const btn = document.getElementById('btn-verificar-disponibilidade');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Verificando...';
         btn.disabled = true;
 
-        // O formulário será enviado normalmente (POST para o Django)
+        // O formulário será enviado normalmente para o Django
     });
 
     // Função para mostrar alertas
@@ -108,27 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         document.getElementById('form-datas').prepend(alert);
+        
+        // Scroll para o alerta
+        alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Mostrar/ocultar resultados baseado no conteúdo da página
-    function checkAndShowResults() {
-        const resultadosDiv = document.getElementById('resultados');
-        const semResultadosDiv = document.getElementById('sem-resultados');
-        
-        // Verifica se há cards de resultados visíveis
-        const temResultados = resultadosDiv.querySelector('.card') || 
-                             resultadosDiv.querySelector('.alert-warning');
-        
-        if (temResultados) {
-            resultadosDiv.classList.remove('d-none');
-            semResultadosDiv.classList.add('d-none');
-        } else {
-            resultadosDiv.classList.add('d-none');
-            semResultadosDiv.classList.remove('d-none');
-        }
-    }
-
-    // Efeito hover nos cards disponíveis
+    // Efeito hover nos cards (se existirem)
     document.querySelectorAll('.disponivel').forEach(card => {
         card.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-5px)';
@@ -140,29 +121,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Formatação automática de datas
-    function formatarDataParaExibicao(dataString) {
-        const data = new Date(dataString);
-        return data.toLocaleDateString('pt-BR');
-    }
-
-    // Atualizar preview das datas selecionadas
-    function atualizarPreviewDatas() {
-        const dataRetirada = document.getElementById('data_retirada').value;
-        const dataDevolucao = document.getElementById('data_devolucao').value;
+    // Função para controle de exibição de resultados
+    function checkAndShowResults() {
+        const resultadosDiv = document.getElementById('resultados');
+        const semResultadosDiv = document.getElementById('sem-resultados');
         
-        if (dataRetirada && dataDevolucao) {
-            console.log('Período selecionado:', {
-                retirada: formatarDataParaExibicao(dataRetirada),
-                devolucao: formatarDataParaExibicao(dataDevolucao)
-            });
-        }
+        // A lógica agora é controlada pelo Django via template
+        // O JavaScript só precisa garantir o comportamento inicial
+        console.log("📊 Verificando estado dos resultados...");
     }
 
-    // Ouvir mudanças nas datas
-    document.getElementById('data_retirada').addEventListener('change', atualizarPreviewDatas);
-    document.getElementById('data_devolucao').addEventListener('change', atualizarPreviewDatas);
-
-    // Verificar e mostrar resultados ao carregar a página
+    // Chamar a função de verificação
     checkAndShowResults();
+
+    console.log("🎯 JavaScript configurado com sucesso!");
 });
+
+// REMOVA ESTA PARTE DUPLICADA:
+// document.addEventListener('DOMContentLoaded', function() {
+//     // Configurações básicas...
+//     const hoje = new Date().toISOString().split('T')[0];
+//     document.getElementById('data_retirada').min = hoje;
+//     document.getElementById('data_devolucao').min = hoje;
+//
+//     // Resto do código permanece igual...
+//     // (validações, cupom, etc.)
+// });

@@ -27,6 +27,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("alugar/", views.alugar, name="alugar"),
     path("categorias/", include("categoria.urls")),
+    path('escolher-grupo/<slug:slug_grupo>/', views.escolher_grupo, name='escolher_grupo'),
 ]
 
 if settings.DEBUG:

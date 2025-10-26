@@ -1,0 +1,55 @@
+/* escolher_grupo.css */
+.forma-pagamento-option {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.forma-pagamento-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.forma-pagamento-option .form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.forma-pagamento-option.selecionada {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-color: #007bff;
+}
+
+.sticky-top {
+    z-index: 1020;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item a {
+    text-decoration: none;
+    color: #6c757d;
+}
+
+.breadcrumb-item a:hover {
+    color: #007bff;
+}
+
+.custom-alert {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
