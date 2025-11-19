@@ -1,0 +1,208 @@
+/* static/css/detalhes_reserva.css */
+
+/* Status Badges */
+.status-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.status-pendente {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-confirmada {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.status-ativa {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-concluida {
+    background-color: #e2e3e5;
+    color: #383d41;
+    border: 1px solid #d6d8db;
+}
+
+.status-cancelada {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Card de Status */
+.status-card {
+    border-left: 4px solid #007bff;
+}
+
+/* Imagem do Veículo */
+.veiculo-imagem {
+    max-height: 150px;
+    object-fit: contain;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.veiculo-imagem-placeholder {
+    height: 150px;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+}
+
+/* Detalhes de Data */
+.detalhe-data {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #28a745;
+}
+
+.detalhe-data:last-child {
+    border-left-color: #ffc107;
+}
+
+.data-destaque {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.hora-destaque {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* Duração */
+.duracao-destaque {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 0 auto;
+    max-width: 200px;
+}
+
+.numero-dias {
+    font-size: 2.5rem;
+    font-weight: bold;
+    display: block;
+    line-height: 1;
+}
+
+/* Resumo do Valor */
+.resumo-valor {
+    font-size: 0.95rem;
+}
+
+.resumo-valor hr {
+    margin: 1rem 0;
+    border-top: 2px dashed #dee2e6;
+}
+
+/* Informações de Contato */
+.contato-info {
+    font-size: 0.9rem;
+}
+
+.contato-info .fa-phone,
+.contato-info .fa-envelope,
+.contato-info .fa-clock {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Breadcrumb Personalizado */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-item a {
+    text-decoration: none;
+    color: #6c757d;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: #007bff;
+}
+
+/* Botões de Ação */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.5s ease;
+}
+
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.2s; }
+.card:nth-child(4) { animation-delay: 0.3s; }
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .detalhe-data {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .duracao-destaque {
+        padding: 1rem;
+    }
+    
+    .numero-dias {
+        font-size: 2rem;
+    }
+    
+    .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .btn,
+    .breadcrumb,
+    .card-header.bg-light {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .status-card {
+        border-left: 4px solid #000 !important;
+    }
+}

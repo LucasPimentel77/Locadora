@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Minhas Reservas</h2>
+
+{% if reservas %}
+    <div class="row">
+        {% for reserva in reservas %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Reserva #{{ reserva.id }}</h5>
+                    <p class="card-text">
+                        <strong>Veículo:</strong> {{ reserva.grupo.nome }}<br>
+                        <strong>Período:</strong> {{ reserva.data_retirada|date:"d/m/Y H:i" }} - {{ reserva.data_devolucao|date:"d/m/Y H:i" }}<br>
+                        <strong>Status:</strong> 
+                        <span class="badge bg-{% if reserva.status == 'confirmada' %}success{% elif reserva.status == 'ativa' %}primary{% elif reserva.status == 'cancelada' %}danger{% else %}secondary{% endif %}">
+                            {{ reserva.get_status_display }}
+                        </span><br>
+                        <strong>Valor:</strong> R$ {{ reserva.pagamento.valor_final }}
+                    </p>
+                    <a href="{% url 'detalhes_reserva' reserva.id %}" class="btn btn-outline-primary btn-sm">
+                        Ver Detalhes
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        Você ainda não fez nenhuma reserva.
+        <a href="{% url 'alugar' %}" class="alert-link">Fazer uma reserva</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -20,37 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Verificar cupom (funcionalidade independente)
-    document.getElementById('btn-verificar-cupom').addEventListener('click', function() {
-        const cupom = document.getElementById('cupom').value;
-        const mensagem = document.getElementById('mensagem-cupom');
-        
-        if (!cupom) {
-            mensagem.innerHTML = '<small class="text-danger">Digite um cupom</small>';
-            return;
-        }
-
-        // Mostrar loading
-        const btn = this;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Verificando...';
-        btn.disabled = true;
-
-        // Cupons válidos estáticos
-        const cuponsValidos = ['SPEED10', 'PRIMEIRALOCACAO', 'DESCONTO15'];
-        
-        // Simular verificação
-        setTimeout(function() {
-            if (cuponsValidos.includes(cupom.toUpperCase())) {
-                mensagem.innerHTML = '<small class="text-success"><i class="fas fa-check me-1"></i>Cupom válido! Desconto aplicado.</small>';
-            } else {
-                mensagem.innerHTML = '<small class="text-danger"><i class="fas fa-times me-1"></i>Cupom inválido</small>';
-            }
-            
-            // Restaurar botão
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }, 1000);
-    });
+    document.getElementById('btn-verificar-cupom').addEventListener('click', verificarCupom);
 
     // VALIDAÇÃO DO FORMULÁRIO ANTES DE ENVIAR
     document.getElementById('form-datas').addEventListener('submit', function(e) {
@@ -88,27 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // O formulário será enviado normalmente para o Django
     });
 
-    // Função para mostrar alertas
-    function showAlert(message, type) {
-        // Remove alertas anteriores
-        const existingAlert = document.querySelector('.alert-dismissible');
-        if (existingAlert) {
-            existingAlert.remove();
-        }
-
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show mt-3`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.getElementById('form-datas').prepend(alert);
-        
-        // Scroll para o alerta
-        alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
     // Efeito hover nos cards (se existirem)
     document.querySelectorAll('.disponivel').forEach(card => {
         card.addEventListener('mouseenter', function() {
@@ -137,13 +86,138 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("🎯 JavaScript configurado com sucesso!");
 });
 
-// REMOVA ESTA PARTE DUPLICADA:
-// document.addEventListener('DOMContentLoaded', function() {
-//     // Configurações básicas...
-//     const hoje = new Date().toISOString().split('T')[0];
-//     document.getElementById('data_retirada').min = hoje;
-//     document.getElementById('data_devolucao').min = hoje;
-//
-//     // Resto do código permanece igual...
-//     // (validações, cupom, etc.)
-// });
+// FUNÇÕES GLOBAIS (fora do DOMContentLoaded)
+
+function verificarCupom() {
+    const cupom = document.getElementById('cupom').value;
+    const mensagem = document.getElementById('mensagem-cupom');
+    
+    if (!cupom) {
+        mensagem.innerHTML = '<small class="text-danger">Digite um cupom</small>';
+        return;
+    }
+
+    // Mostrar loading
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div> Verificando...';
+    btn.disabled = true;
+
+    // Fazer requisição AJAX para verificar o cupom no backend
+    fetch('/reserva/api/verificar-cupom/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            'cupom': cupom
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.valido) {
+            mensagem.innerHTML = `<small class="text-success"><i class="fas fa-check me-1"></i>${data.mensagem}</small>`;
+            
+            // Aplicar desconto no valor total
+            if (data.desconto_aplicado) {
+                aplicarDesconto(data.desconto_percentual, data.valor_desconto);
+            }
+        } else {
+            mensagem.innerHTML = `<small class="text-danger"><i class="fas fa-times me-1"></i>${data.mensagem}</small>`;
+        }
+        
+        // Restaurar botão
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        mensagem.innerHTML = '<small class="text-danger"><i class="fas fa-times me-1"></i>Erro ao verificar cupom</small>';
+        
+        // Restaurar botão
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Função para aplicar o desconto na interface
+function aplicarDesconto(percentual, valorDesconto) {
+    const valorTotalElement = document.querySelector('.valor-total');
+    if (!valorTotalElement) {
+        console.warn('Elemento .valor-total não encontrado');
+        return;
+    }
+    
+    const valorOriginal = parseFloat(valorTotalElement.dataset.valorOriginal) || 
+                         parseFloat(valorTotalElement.textContent.replace('R$ ', '').replace(',', '.').replace('.', ''));
+    
+    // Salvar valor original se não estiver salvo
+    if (!valorTotalElement.dataset.valorOriginal) {
+        valorTotalElement.dataset.valorOriginal = valorOriginal;
+    }
+    
+    // Calcular novo valor
+    const novoValor = valorOriginal - valorDesconto;
+    
+    // Atualizar interface
+    valorTotalElement.innerHTML = `R$ ${novoValor.toFixed(2).replace('.', ',')}`;
+    
+    // Mostrar desconto aplicado
+    const descontoElement = document.getElementById('desconto-aplicado');
+    if (descontoElement) {
+        descontoElement.innerHTML = `
+            <div class="alert alert-success mt-2">
+                <i class="fas fa-tag me-2"></i>
+                <strong>Desconto aplicado:</strong> ${percentual}% (R$ ${valorDesconto.toFixed(2).replace('.', ',')})
+            </div>
+        `;
+    }
+    
+    // Atualizar campo hidden para o formulário
+    const cupomInput = document.getElementById('cupom');
+    if (cupomInput) {
+        cupomInput.dataset.cupomValido = 'true';
+    }
+}
+
+// Função para pegar o token CSRF
+function getCSRFToken() {
+    const name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Função para mostrar alertas (tornar global)
+function showAlert(message, type) {
+    // Remove alertas anteriores
+    const existingAlert = document.querySelector('.alert-dismissible');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const form = document.getElementById('form-datas');
+    if (form) {
+        form.prepend(alert);
+        
+        // Scroll para o alerta
+        alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}

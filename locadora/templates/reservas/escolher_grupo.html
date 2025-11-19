@@ -29,8 +29,8 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-4">
-                            {% if grupo.carros_disponiveis.first and grupo.carros_disponiveis.first.imagem %}
-                                <img src="{{ grupo.carros_disponiveis.first.imagem.url }}" 
+                            {% if imagem %}
+                                <img src="{{ imagem.url }}" 
                                      class="img-fluid rounded" alt="{{ grupo.nome }}"
                                      style="max-height: 200px; object-fit: contain;">
                             {% else %}
@@ -112,6 +112,9 @@
             </div>
         </div>
 
+    
+        </div>
+
         <!-- Forma de Pagamento -->
         <div class="col-lg-4">
             <div class="card shadow-sm sticky-top" style="top: 20px;">
@@ -119,61 +122,82 @@
                     <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Forma de Pagamento</h5>
                 </div>
                 <div class="card-body">
-                    <form id="form-pagamento" method="POST" action="#">
+                    <!-- FORM CORRETO: action para finalizar_reserva -->
+                    <form id="form-pagamento" method="POST" action="{% url 'finalizar_reserva' grupo.slug %}">
                         {% csrf_token %}
                         
-                        <!-- Opções de Pagamento -->
+                        <!-- Opções de Pagamento - ATUALIZADO para usar Metodo -->
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3">Escolha como pagar:</h6>
                             
-                            {% for forma in formas_pagamento %}
+                            {% for metodo in metodos_pagamento %}
                             <div class="form-check mb-3 border rounded p-3 forma-pagamento-option">
                                 <input class="form-check-input" type="radio" 
-                                       name="forma_pagamento" id="pagamento-{{ forma.tipo }}" 
-                                       value="{{ forma.tipo }}" required
-                                       {% if forloop.first %}checked{% endif %}>
-                                <label class="form-check-label w-100" for="pagamento-{{ forma.tipo }}">
+                                       name="metodo_pagamento" id="pagamento-{{ metodo.id }}" 
+                                       value="{{ metodo.id }}" required
+                                       data-desconto="{{ metodo.desconto }}"
+                                       >
+                                <label class="form-check-label w-100" for="pagamento-{{ metodo.id }}">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <i class="{{ forma.icone }} me-2"></i>
-                                            <strong>{{ forma.nome }}</strong>
+                                            <i class="{{ metodo.icone }} me-2"></i>
+                                            <strong>{{ metodo.nome }}</strong>
                                         </div>
-                                        {% if forma.desconto %}
-                                        <span class="badge bg-success">-{{ forma.desconto }}%</span>
+                                        {% if metodo.desconto > 0 %}
+                                        <span class="badge bg-success">-{{ metodo.desconto }}%</span>
                                         {% endif %}
                                     </div>
-                                    <small class="text-muted d-block mt-1">{{ forma.descricao }}</small>
+                                    <small class="text-muted d-block mt-1">{{ metodo.descricao }}</small>
+                                    
+                                    <!-- Informações adicionais do método -->
+                                    {% if metodo.nome != 'Local' %}
+                                    <small class="text-info d-block mt-1">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Pagamento antecipado
+                                    </small>
+                                    {% else %}
+                                    <small class="text-warning d-block mt-1">
+                                        <i class="fas fa-store me-1"></i>
+                                        Pagamento no local
+                                    </small>
+                                    {% endif %}
                                 </label>
+                            </div>
+                            {% empty %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Nenhum método de pagamento disponível no momento.
                             </div>
                             {% endfor %}
                         </div>
 
-                        <!-- Resumo do Valor -->
+                        <!-- Resumo do Valor - ATUALIZADO para cálculo dinâmico -->
                         <div class="border-top pt-3">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Diária:</span>
-                                <span>R$ {{ grupo.preco_diaria }}</span>
+                                <span>R$ <span id="valor-diaria">{{ grupo.preco_diaria }}</span></span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Taxas e impostos:</span>
-                                <span>R$ 25,00</span>
-                            </div>
-                            <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
-                                <span>Total:</span>
-                                <span id="total-final">R$ {{ grupo.preco_diaria|add:25 }}</span>
+                                <span>R$ <span id="valor-taxas">25,00</span></span>
                             </div>
                             
-                            <!-- Desconto PIX (dinâmico) -->
-                            <div class="mt-2 text-success d-none" id="desconto-pix">
-                                <small>
-                                    <i class="fas fa-tag me-1"></i>
-                                    Desconto PIX aplicado: <strong id="valor-desconto">-R$ 0,00</strong>
-                                </small>
+                            <!-- Desconto dinâmico -->
+                            <div class="d-flex justify-content-between mb-2 text-success d-none" id="desconto-container">
+                                <span>Desconto:</span>
+                                <span>-R$ <span id="valor-desconto">0,00</span></span>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
+                                <span>Total:</span>
+                                <span>R$ <span id="total-final">{{ grupo.preco_diaria|add:25 }}</span></span>
                             </div>
                         </div>
 
                         <!-- Botão de Confirmação -->
-                        <button type="submit" class="btn btn-primary w-100 mt-4 py-2">
+                        <button type="submit" class="btn btn-primary w-100 mt-4 py-2" id="btn-confirmar">
                             <i class="fas fa-check me-2"></i>
                             Confirmar Reserva
                         </button>
@@ -182,6 +206,11 @@
                             <i class="fas fa-shield-alt me-1"></i>
                             Reserva 100% segura
                         </small>
+
+                        <!-- Campos ocultos para passar dados da sessão -->
+                        <input type="hidden" name="data_retirada" value="{{ request.session.data_retirada }}">
+                        <input type="hidden" name="data_devolucao" value="{{ request.session.data_devolucao }}">
+                        <input type="hidden" name="cupom_aplicado" value="{{ request.session.cupom_aplicado }}">
                     </form>
                 </div>
             </div>
@@ -191,7 +220,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Dados para JavaScript -->
 <input type="hidden" id="diaria-value" data-value="{{ grupo.preco_diaria }}">
+<input type="hidden" id="taxas-value" data-value="25">
 
 <script src="{% static 'js/escolher_grupo.js' %}"></script>
-{% endblock %}
+{% endblock %}  

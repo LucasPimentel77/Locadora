@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from carros.models import Carro, GrupoCarro
+from pagamento.models import Pagamento, Metodo, Cupom
 from reserva.models import Reserva
 
 def home(request):
@@ -22,6 +23,9 @@ def alugar(request):
     hora_devolucao_form = ''
     cupom_form = ''
     
+    # CUPONS ATIVOS - adicione esta linha
+    cupons_ativos = Cupom.objects.filter(ativo=True, data_validade__gte=timezone.now().date())
+
     if request.method == 'POST':
         print("=" * 70)
         print("🚀 PROCESSANDO FORMULÁRIO (POST)")
@@ -49,6 +53,19 @@ def alugar(request):
             # CONVERTER para timezone-aware
             dt_retirada = timezone.make_aware(dt_retirada)
             dt_devolucao = timezone.make_aware(dt_devolucao)
+
+            # ✅✅✅ ADICIONE ESTAS LINHAS AQUI ✅✅✅
+            # SALVAR NA SESSÃO para usar nas próximas views
+            request.session['data_retirada'] = f"{data_retirada} {hora_retirada}"
+            request.session['data_devolucao'] = f"{data_devolucao} {hora_devolucao}"
+            request.session['cupom_aplicado'] = cupom_form
+            request.session.modified = True
+            
+            print(f"💾 SESSÃO SALVA:")
+            print(f"💾 data_retirada: {request.session['data_retirada']}")
+            print(f"💾 data_devolucao: {request.session['data_devolucao']}")
+            print(f"💾 cupom_aplicado: {request.session['cupom_aplicado']}")
+            # ✅✅✅ FIM DAS LINHAS ADICIONAIS ✅✅✅
 
             # Verificar disponibilidade por subgrupo
             grupos_ativos = GrupoCarro.objects.filter(ativo=True)
@@ -94,6 +111,7 @@ def alugar(request):
         'hora_retirada_form': hora_retirada_form,
         'hora_devolucao_form': hora_devolucao_form,
         'cupom_form': cupom_form,
+        'cupons_ativos': cupons_ativos,
         # Variável para controle no template
         'foi_submetido': request.method == 'POST'
     }
@@ -142,48 +160,4 @@ def verificar_disponibilidade(subgrupo, dt_retirada, dt_devolucao):
     
     return carros_disponiveis_finais
 
-def escolher_grupo(request, slug_grupo):
-    """Página para escolher o grupo e forma de pagamento"""
-    try:
-        grupo = GrupoCarro.objects.get(slug=slug_grupo, ativo=True)
-        
-        # Carros disponíveis neste grupo
-        carros_disponiveis = Carro.objects.filter(grupo=grupo, disponivel=True)
-        
-        # Informações das formas de pagamento
-        formas_pagamento = [
-            {
-                'tipo': 'pix',
-                'nome': 'PIX',
-                'descricao': 'Pagamento antecipado com 5% de desconto',
-                'icone': 'fas fa-qrcode',
-                'desconto': 5
-            },
-            {
-                'tipo': 'cartao',
-                'nome': 'Cartão de Crédito',
-                'descricao': 'Pagamento antecipado em até 12x',
-                'icone': 'fas fa-credit-card',
-                'parcelas': 12
-            },
-            {
-                'tipo': 'local',
-                'nome': 'Pagamento no Local',
-                'descricao': 'Pague na retirada do veículo',
-                'icone': 'fas fa-store',
-                'vantagem': 'Mais flexível'
-            }
-        ]
-        
-        context = {
-            'grupo': grupo,
-            'carros_disponiveis': carros_disponiveis,
-            'formas_pagamento': formas_pagamento,
-            'total_carros': carros_disponiveis.count(),
-        }
-        
-        return render(request, 'reservas/escolher_grupo.html', context)
-        
-    except GrupoCarro.DoesNotExist:
-        messages.error(request, "Grupo não encontrado.")
-        return redirect('alugar')
+

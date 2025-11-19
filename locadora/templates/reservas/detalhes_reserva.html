@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalhes da Reserva #{{ reserva.id }} - Locadora SpeedCar{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/detalhes_reserva.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'alugar' %}">Alugar Carro</a></li>
+                    <li class="breadcrumb-item active">Reserva #{{ reserva.id }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Alertas -->
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                <i class="fas 
+                    {% if message.tags == 'success' %}fa-check-circle
+                    {% elif message.tags == 'error' %}fa-times-circle
+                    {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                    {% else %}fa-info-circle{% endif %} 
+                    me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Informações Principais -->
+        <div class="col-lg-8">
+            <!-- Card de Status -->
+            <div class="card shadow-sm mb-4 status-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 fw-bold text-primary">
+                                <i class="fas fa-car me-2"></i>
+                                Reserva #{{ reserva.id }}
+                            </h1>
+                            <p class="text-muted mb-0">Status: 
+                                <span class="badge status-badge status-{{ reserva.status }}">
+                                    {{ reserva.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-outline-primary me-2" id="btn-imprimir">
+                                <i class="fas fa-print me-1"></i>Imprimir
+                            </button>
+                            <button class="btn btn-primary" id="btn-compartilhar">
+                                <i class="fas fa-share-alt me-1"></i>Compartilhar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Veículo -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-car me-2"></i>Informações do Veículo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            {% if imagem %}
+                                <img src="{{ imagem.url }}" 
+                                     class="img-fluid rounded veiculo-imagem" 
+                                     alt="{{ reserva.grupo.nome }}">
+                            {% else %}
+                                <div class="bg-light rounded veiculo-imagem-placeholder d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-car fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h4 class="fw-bold text-primary">{{ reserva.grupo.nome }}</h4>
+                            <p class="text-muted">{{ reserva.grupo.descricao }}</p>
+                            
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-users me-2"></i>
+                                        {{ reserva.grupo.capacidade_padrao }} passageiros
+                                    </small>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="fas fa-gas-pump me-2"></i>
+                                        {{ reserva.grupo.combustivel_padrao }}
+                                    </small>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-snowflake me-2"></i>
+                                        Ar-condicionado
+                                    </small>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="fas fa-cog me-2"></i>
+                                        Direção hidráulica
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datas e Local -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Datas e Local
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">Retirada</h6>
+                            <div class="detalhe-data">
+                                <i class="fas fa-map-marker-alt text-success me-2"></i>
+                                <div>
+                                    <strong>Local: </strong>Loja Centro<br>
+                                    <small class="text-muted">Rua Principal, 123 - Centro</small>
+                                </div>
+                            </div>
+                            <div class="detalhe-data mt-3">
+                                <i class="fas fa-clock text-success me-2"></i>
+                                <div>
+                                    <strong>Data/Hora: </strong><br>
+                                    <span class="data-destaque">{{ reserva.data_retirada|date:"d/m/Y" }}</span>
+                                    às <span class="hora-destaque">{{ reserva.data_retirada|date:"H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">Devolução</h6>
+                            <div class="detalhe-data">
+                                <i class="fas fa-map-marker-alt text-warning me-2"></i>
+                                <div>
+                                    <strong>Local: </strong>Loja Centro<br>
+                                    <small class="text-muted">Rua Principal, 123 - Centro</small>
+                                </div>
+                            </div>
+                            <div class="detalhe-data mt-3">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                <div>
+                                    <strong>Data/Hora: </strong><br>
+                                    <span class="data-destaque">{{ reserva.data_devolucao|date:"d/m/Y" }}</span>
+                                    às <span class="hora-destaque">{{ reserva.data_devolucao|date:"H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Duração -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="text-center">
+                            <h6 class="fw-bold text-muted">Duração do Aluguel</h6>
+                            <div class="duracao-destaque">
+                                <span class="numero-dias">{{ reserva.duracao_dias }}</span>
+                                <small class="text-muted">dias</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações de Pagamento -->
+            {% if reserva.pagamento %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>Informações de Pagamento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Método de Pagamento</h6>
+                            <div class="d-flex align-items-center mt-2">
+                                <i class="{{ reserva.pagamento.metodo.icone }} fa-2x text-primary me-3"></i>
+                                <div>
+                                    <strong>{{ reserva.pagamento.metodo.nome }}</strong>
+                                    {% if reserva.pagamento.metodo.desconto > 0 %}
+                                    <br>
+                                    <small class="text-success">
+                                        <i class="fas fa-tag me-1"></i>
+                                        {{ reserva.pagamento.metodo.desconto }}% de desconto aplicado
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Cupom Aplicado</h6>
+                            <div class="mt-2">
+                                {% if reserva.pagamento.cupom %}
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-ticket-alt me-1"></i>
+                                    {{ reserva.pagamento.cupom.codigo }}
+                                </span>
+                                <small class="text-muted d-block mt-1">
+                                    {{ reserva.pagamento.cupom.desconto }}% de desconto
+                                </small>
+                                {% else %}
+                                <span class="text-muted">Nenhum cupom aplicado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Resumo e Ações -->
+        <div class="col-lg-4">
+            <!-- Resumo do Valor -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Resumo do Valor
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="resumo-valor">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Diária ({{ reserva.duracao_dias }} dias):</span>
+                            <span>R$ {{ reserva.valor_diarias|floatformat:2 }}</span>
+                        </div>
+                        
+                        {% if reserva.pagamento.metodo.desconto > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Desconto {{ reserva.pagamento.metodo.nome }}:</span>
+                            <span>-R$ {{ reserva.pagamento.desconto_metodo|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if reserva.pagamento.cupom %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Desconto Cupom:</span>
+                            <span>-R$ {{ reserva.pagamento.desconto_cupom|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Taxas e impostos:</span>
+                            <span>R$ {{ reserva.pagamento.taxas|floatformat:2 }}</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
+                            <span>Total:</span>
+                            <span>R$ {{ reserva.pagamento.valor_final|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if reserva.status == 'confirmada' %}
+                        <button class="btn btn-success" id="btn-checkin">
+                            <i class="fas fa-check-circle me-2"></i>Fazer Check-in
+                        </button>
+                        {% endif %}
+                        
+                        {% if reserva.status == 'ativa' %}
+                        <button class="btn btn-warning" id="btn-checkout">
+                            <i class="fas fa-sign-out-alt me-2"></i>Fazer Check-out
+                        </button>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-primary" id="btn-alterar">
+                            <i class="fas fa-edit me-2"></i>Alterar Reserva
+                        </button>
+                        
+                        {% if reserva.status in 'pendente,confirmada' %}
+                        <button class="btn btn-outline-danger" id="btn-cancelar">
+                            <i class="fas fa-times-circle me-2"></i>Cancelar Reserva
+                        </button>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-secondary" id="btn-suporte">
+                            <i class="fas fa-headset me-2"></i>Falar com Suporte
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações de Contato -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-phone me-2"></i>Precisa de Ajuda?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="contato-info">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-phone text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Telefone</small>
+                                <div class="fw-bold">(11) 9999-9999</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-envelope text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">E-mail</small>
+                                <div class="fw-bold">suporte@speedcar.com</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Horário de Atendimento</small>
+                                <div class="fw-bold">24h por dia</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/detalhes_reserva.js' %}"></script>
+{% endblock %}

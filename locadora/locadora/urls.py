@@ -20,14 +20,20 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from . import views
+from . import views, views_auth
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home, name="home"),
+    path('cadastro/', views_auth.cadastro, name='cadastro'),
+    path('login/', views_auth.login_usuario, name='login'),
+    path('logout/', views_auth.logout_usuario, name='logout'),
+    path('perfil/', views_auth.perfil, name='perfil'),
+    path('perfil/editar/', views_auth.editar_perfil, name='editar_perfil'),
     path("alugar/", views.alugar, name="alugar"),
     path("categorias/", include("categoria.urls")),
-    path('escolher-grupo/<slug:slug_grupo>/', views.escolher_grupo, name='escolher_grupo'),
+    path("reserva/", include("reserva.urls")),
+
 ]
 
 if settings.DEBUG:

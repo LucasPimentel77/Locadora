@@ -9,25 +9,6 @@
 
 {% block content %}
 
-<!-- DEBUG VISUAL -->
-<div style="background: #e9ecef; padding: 15px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff;">
-    <h5>🔍 DEBUG DO TEMPLATE</h5>
-    <p><strong>Método da requisição:</strong> {{ request.method }}</p>
-    <p><strong>Foi submetido:</strong> {{ foi_submetido }}</p>
-    <p><strong>Subgrupos disponíveis:</strong> {{ subgrupos_disponiveis|length }}</p>
-    <p><strong>Subgrupos indisponíveis:</strong> {{ subgrupos_indisponiveis|length }}</p>
-    
-    {% if subgrupos_disponiveis %}
-        <p><strong>Subgrupos disponíveis encontrados:</strong></p>
-        <ul>
-        {% for subgrupo in subgrupos_disponiveis %}
-            <li>{{ subgrupo.nome }} - {{ subgrupo.carros_disponiveis }} carros</li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p><strong>Nenhum subgrupo disponível na lista</strong></p>
-    {% endif %}
-</div>
 
 <div class="container py-5">
     <!-- Cabeçalho -->
