@@ -20,7 +20,7 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from . import views, views_auth
+from . import views, views_auth, views_api
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -33,6 +33,7 @@ urlpatterns = [
     path("alugar/", views.alugar, name="alugar"),
     path("categorias/", include("categoria.urls")),
     path("reserva/", include("reserva.urls")),
+    path('api/reservas/<int:reserva_id>/atualizar-status/', views_api.atualizar_status_reserva, name='atualizar_status_reserva'),
 
 ]
 

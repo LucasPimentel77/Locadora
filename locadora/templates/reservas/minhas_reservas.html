@@ -11,6 +11,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Reserva #{{ reserva.id }}</h5>
                     <p class="card-text">
+                        <strong>Data de solicitação:</strong> {{ reserva.data_criacao }}<br>
                         <strong>Veículo:</strong> {{ reserva.grupo.nome }}<br>
                         <strong>Período:</strong> {{ reserva.data_retirada|date:"d/m/Y H:i" }} - {{ reserva.data_devolucao|date:"d/m/Y H:i" }}<br>
                         <strong>Status:</strong> 

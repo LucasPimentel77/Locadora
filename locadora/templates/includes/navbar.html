@@ -1,26 +1,28 @@
-<!-- Navbar COM CLASSES DO CSS PERSONALIZADO -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+<!-- Navbar Centralizada - ESTILO ORIGINAL -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
-            <i class="fas fa-car fa-2x me-2"></i>
-            <span class="fw-bold">Locadora SpeedCar</span>
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fas fa-car me-2"></i>SpeedCar
         </a>
-
-        <!-- Botão Mobile -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-
-        <!-- Itens do Menu -->
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <!-- Alugar Carro - BOTÃO DESTAQUE -->
-                <li class="nav-item me-2">
-                    <a class="nav-link btn btn-warning text-dark fw-bold px-3" href="{% url 'alugar' %}">
-                        <i class="fas fa-key me-1"></i>Alugar um Carro 
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Menu Principal -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="fas fa-home me-1"></i>Início
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'alugar' %}">
+                        <i class="fas fa-search me-1"></i>Alugar Carro
+                    </a>
+                </li>
+
 
                 <!-- Categorias Dropdown -->
                 <li class="nav-item dropdown me-2">
@@ -46,33 +48,61 @@
                     </ul>
                 </li>
 
-                <!-- Minhas Reservas -->
-                <li class="nav-item me-2">
-                    <a class="nav-link px-3" href="#">
-                        <i class="fas fa-calendar-check me-1"></i>Minhas Reservas
-                    </a>
-                </li>
 
-                <!-- Promoções -->
-                <li class="nav-item me-2">
-                    <a class="nav-link text-warning fw-bold px-3" href="#">
-                        <i class="fas fa-percentage me-1"></i>Promoções
-                    </a>
-                </li>
-
-                <!-- Fale Conosco -->
-                <li class="nav-item me-2">
-                    <a class="nav-link px-3" href="#">
-                        <i class="fas fa-headset me-1"></i>Fale Conosco
-                    </a>
-                </li>
-
-                <!-- Login/Usuário -->
                 <li class="nav-item">
-                    <a class="nav-link px-3" href="#">
-                        <i class="fas fa-sign-in-alt me-1"></i>Entrar
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-phone me-1"></i>Fale Conosco
                     </a>
                 </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'minhas_reservas' %}">
+                        <i class="fas fa-calendar-alt me-1"></i>Minhas Reservas
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <!-- Área do Usuário -->
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                <!-- Usuário Logado -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'minhas_reservas' %}">
+                                <i class="fas fa-calendar-alt me-2"></i>Minhas Reservas
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'perfil' %}">
+                                <i class="fas fa-user me-2"></i>Meu Perfil
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% else %}
+                <!-- Usuário Não Logado -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt me-1"></i>Login
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cadastro' %}">
+                        <i class="fas fa-user-plus me-1"></i>Cadastrar
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>

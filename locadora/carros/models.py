@@ -10,6 +10,7 @@ class GrupoCarro(models.Model):
     slug = models.SlugField(max_length=100, unique=True)
     preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
     ativo = models.BooleanField(default=True)
+    combustivel = models.CharField(max_length=50, choices=[('flex', 'Flex'), ('diesel', 'Diesel'), ('eletrico', 'Elétrico')], default='flex')
 
     def __str__(self):
         return self.nome
@@ -25,7 +26,6 @@ class Carro(models.Model):
     disponivel = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to='photos/carros/', blank=True)
     capacidade = models.PositiveIntegerField()
-    combustivel = models.CharField(max_length=50, choices=[('gasolina', 'Gasolina'), ('etanol', 'Etanol'), ('flex', 'Flex')])
     capacidade = models.IntegerField(help_text="Número de passageiros")
 
     def __str__(self):

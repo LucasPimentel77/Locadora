@@ -5,10 +5,12 @@ from django.contrib import messages
 from carros.models import Carro, GrupoCarro
 from pagamento.models import Pagamento, Metodo, Cupom
 from reserva.models import Reserva
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, 'home.html')
 
+@login_required(login_url='/login/')
 def alugar(request):
     horarios = [f"{h:02d}:00" for h in range(8, 21)]
     data_hoje = timezone.now().date()

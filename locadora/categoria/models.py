@@ -1,5 +1,7 @@
 from django.db import models
 
+from django.db.models import Min
+
 # Create your models here.
 
 class Categoria(models.Model):
@@ -33,6 +35,20 @@ class Categoria(models.Model):
     slug = models.SlugField(max_length=100,unique=True)
     descricao = models.TextField(max_length=500, blank=True)
     imagem = models.ImageField(upload_to='photos/categorias/', blank=True)
+
+    @property
+    def menor_preco(self):
+        """
+        Retorna o menor preço entre todos os grupos desta categoria
+        """
+        from carros.models import GrupoCarro  # Import aqui para evitar circular import
+        
+        resultado = GrupoCarro.objects.filter(
+            categoria=self,
+            ativo=True
+        ).aggregate(menor_preco=Min('preco_diaria'))
+        
+        return resultado['menor_preco'] or 0
 
     # Property para pegar o ícone correto
     @property

@@ -8,6 +8,14 @@
 {% endblock %}
 
 {% block content %}
+
+<!-- Adicione isso no seu template -->
+<div id="reserva-data" 
+     data-reserva-id="{{ reserva.id }}"
+     data-csrf-token="{{ csrf_token }}"
+     style="display: none;">
+</div>
+
 <div class="container py-5">
     <!-- Cabeçalho -->
     <div class="row mb-4">
@@ -100,11 +108,11 @@
                                 <div class="col-sm-6">
                                     <small class="text-muted d-block">
                                         <i class="fas fa-users me-2"></i>
-                                        {{ reserva.grupo.capacidade_padrao }} passageiros
+                                        {{ capacidade }} passageiros
                                     </small>
                                     <small class="text-muted d-block mt-1">
                                         <i class="fas fa-gas-pump me-2"></i>
-                                        {{ reserva.grupo.combustivel_padrao }}
+                                        {{ reserva.grupo.combustivel }}
                                     </small>
                                 </div>
                                 <div class="col-sm-6">
@@ -289,6 +297,9 @@
                         <button class="btn btn-success" id="btn-checkin">
                             <i class="fas fa-check-circle me-2"></i>Fazer Check-in
                         </button>
+                        <button class="btn btn-outline-primary" id="btn-alterar">
+                            <i class="fas fa-edit me-2"></i>Alterar Reserva
+                        </button>
                         {% endif %}
                         
                         {% if reserva.status == 'ativa' %}
@@ -296,10 +307,16 @@
                             <i class="fas fa-sign-out-alt me-2"></i>Fazer Check-out
                         </button>
                         {% endif %}
-                        
+
+                        {% if reserva.status == 'pendente' %}
+                        <button class="btn btn-success" id="btn-pagamento">
+                            <i class="fas fa-check-circle me-2"></i>Fazer Pagamento
+                        </button>
                         <button class="btn btn-outline-primary" id="btn-alterar">
                             <i class="fas fa-edit me-2"></i>Alterar Reserva
                         </button>
+                        {% endif %}
+                        
                         
                         {% if reserva.status in 'pendente,confirmada' %}
                         <button class="btn btn-outline-danger" id="btn-cancelar">

@@ -3,270 +3,25 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("✅ detalhes_reserva.js carregado!");
 
+    // OBTER DADOS DO TEMPLATE
+    const reservaData = document.getElementById('reserva-data');
+    const RESERVA_ID = reservaData ? reservaData.getAttribute('data-reserva-id') : null;
+    const CSRF_TOKEN = reservaData ? reservaData.getAttribute('data-csrf-token') : '';
+
+    console.log(`📋 Reserva ID: ${RESERVA_ID}`);
+
     // Elementos do DOM
     const btnImprimir = document.getElementById('btn-imprimir');
     const btnCompartilhar = document.getElementById('btn-compartilhar');
+    const btnPagamento = document.getElementById('btn-pagamento');
     const btnCheckin = document.getElementById('btn-checkin');
     const btnCheckout = document.getElementById('btn-checkout');
     const btnAlterar = document.getElementById('btn-alterar');
     const btnCancelar = document.getElementById('btn-cancelar');
     const btnSuporte = document.getElementById('btn-suporte');
 
-    // Inicializar funcionalidades
-    initBotoesAcao();
-    initContadorTempo();
-    initAnimacoes();
-
-    // Função para inicializar botões de ação
-    function initBotoesAcao() {
-        // Botão Imprimir
-        if (btnImprimir) {
-            btnImprimir.addEventListener('click', function() {
-                console.log("🖨️ Imprimindo reserva...");
-                window.print();
-                showToast('Preparando para impressão...', 'info');
-            });
-        }
-
-        // Botão Compartilhar
-        if (btnCompartilhar) {
-            btnCompartilhar.addEventListener('click', function() {
-                console.log("📤 Compartilhando reserva...");
-                compartilharReserva();
-            });
-        }
-
-        // Botão Check-in
-        if (btnCheckin) {
-            btnCheckin.addEventListener('click', function() {
-                console.log("✅ Iniciando check-in...");
-                confirmarAcao(
-                    'Check-in', 
-                    'Deseja confirmar o check-in para esta reserva?',
-                    realizarCheckin
-                );
-            });
-        }
-
-        // Botão Check-out
-        if (btnCheckout) {
-            btnCheckout.addEventListener('click', function() {
-                console.log("🚗 Iniciando check-out...");
-                confirmarAcao(
-                    'Check-out', 
-                    'Deseja confirmar o check-out para esta reserva?',
-                    realizarCheckout
-                );
-            });
-        }
-
-        // Botão Alterar
-        if (btnAlterar) {
-            btnAlterar.addEventListener('click', function() {
-                console.log("✏️ Solicitando alteração...");
-                showToast('Redirecionando para alteração...', 'info');
-                // Aqui você redirecionaria para uma página de alteração
-                setTimeout(() => {
-                    window.location.href = `/alterar-reserva/{{ reserva.id }}/`;
-                }, 1000);
-            });
-        }
-
-        // Botão Cancelar
-        if (btnCancelar) {
-            btnCancelar.addEventListener('click', function() {
-                console.log("❌ Solicitando cancelamento...");
-                confirmarAcao(
-                    'Cancelar Reserva', 
-                    'Tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita.',
-                    cancelarReserva,
-                    'danger'
-                );
-            });
-        }
-
-        // Botão Suporte
-        if (btnSuporte) {
-            btnSuporte.addEventListener('click', function() {
-                console.log("📞 Abrindo suporte...");
-                abrirSuporte();
-            });
-        }
-    }
-
-    // Função para compartilhar reserva
-    function compartilharReserva() {
-        const dadosCompartilhamento = {
-            title: 'Minha Reserva - SpeedCar',
-            text: `Confira minha reserva #{{ reserva.id }} na SpeedCar - {{ reserva.grupo.nome }}`,
-            url: window.location.href
-        };
-
-        if (navigator.share) {
-            navigator.share(dadosCompartilhamento)
-                .then(() => showToast('Reserva compartilhada com sucesso!', 'success'))
-                .catch(error => {
-                    console.log('Erro ao compartilhar:', error);
-                    copiarParaAreaTransferencia();
-                });
-        } else {
-            copiarParaAreaTransferencia();
-        }
-    }
-
-    // Função para copiar link para área de transferência
-    function copiarParaAreaTransferencia() {
-        navigator.clipboard.writeText(window.location.href)
-            .then(() => showToast('Link copiado para área de transferência!', 'success'))
-            .catch(err => {
-                console.error('Erro ao copiar:', err);
-                showToast('Erro ao copiar link', 'error');
-            });
-    }
-
-    // Função para confirmar ações
-    function confirmarAcao(titulo, mensagem, callback, tipo = 'warning') {
-        // Usando SweetAlert2 ou confirm nativo
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: titulo,
-                text: mensagem,
-                icon: tipo,
-                showCancelButton: true,
-                confirmButtonColor: tipo === 'danger' ? '#d33' : '#3085d6',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    callback();
-                }
-            });
-        } else {
-            if (confirm(mensagem)) {
-                callback();
-            }
-        }
-    }
-
-    // Funções de ação
-    function realizarCheckin() {
-        showLoading('Realizando check-in...');
-        
-        // Simular API call
-        setTimeout(() => {
-            hideLoading();
-            showToast('Check-in realizado com sucesso!', 'success');
-            // Atualizar página ou status
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
-        }, 2000);
-    }
-
-    function realizarCheckout() {
-        showLoading('Realizando check-out...');
-        
-        setTimeout(() => {
-            hideLoading();
-            showToast('Check-out realizado com sucesso!', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
-        }, 2000);
-    }
-
-    function cancelarReserva() {
-        showLoading('Cancelando reserva...');
-        
-        setTimeout(() => {
-            hideLoading();
-            showToast('Reserva cancelada com sucesso!', 'success');
-            setTimeout(() => {
-                window.location.href = "{% url 'alugar' %}";
-            }, 2000);
-        }, 2000);
-    }
-
-    function abrirSuporte() {
-        const numeroSuporte = "5511999999999";
-        const mensagem = `Olá, preciso de ajuda com a reserva #{{ reserva.id }}`;
-        const urlWhatsapp = `https://wa.me/${numeroSuporte}?text=${encodeURIComponent(mensagem)}`;
-        
-        window.open(urlWhatsapp, '_blank');
-    }
-
-    // Contador de tempo até a retirada
-    function initContadorTempo() {
-        const dataRetirada = new Date("{{ reserva.data_retirada|date:'c' }}");
-        const agora = new Date();
-        
-        if (dataRetirada > agora && "{{ reserva.status }}" === 'confirmada') {
-            iniciarContadorRegressivo(dataRetirada);
-        }
-    }
-
-    function iniciarContadorRegressivo(dataAlvo) {
-        const contadorElement = document.createElement('div');
-        contadorElement.className = 'alert alert-info mt-3';
-        contadorElement.innerHTML = `
-            <i class="fas fa-clock me-2"></i>
-            <strong>Retirada em: </strong>
-            <span id="contador-tempo"></span>
-        `;
-        
-        document.querySelector('.status-card .card-body').appendChild(contadorElement);
-        
-        const intervalo = setInterval(() => {
-            const agora = new Date();
-            const diferenca = dataAlvo - agora;
-            
-            if (diferenca <= 0) {
-                clearInterval(intervalo);
-                contadorElement.innerHTML = '<i class="fas fa-check-circle me-2"></i><strong>Horário de retirada chegou!</strong>';
-                contadorElement.className = 'alert alert-success mt-3';
-                return;
-            }
-            
-            const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
-            const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutos = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60));
-            
-            let textoContador = '';
-            if (dias > 0) textoContador += `${dias}d `;
-            textoContador += `${horas.toString().padStart(2, '0')}h ${minutos.toString().padStart(2, '0')}m`;
-            
-            document.getElementById('contador-tempo').textContent = textoContador;
-        }, 1000);
-    }
-
-    // Animações
-    function initAnimacoes() {
-        // Efeito de digitação no número da reserva
-        const numeroReserva = document.querySelector('.h3.fw-bold');
-        if (numeroReserva) {
-            numeroReserva.style.opacity = '0';
-            setTimeout(() => {
-                numeroReserva.style.transition = 'opacity 0.5s ease';
-                numeroReserva.style.opacity = '1';
-            }, 300);
-        }
-
-        // Efeito de pulse no status
-        const statusBadge = document.querySelector('.status-badge');
-        if (statusBadge) {
-            setInterval(() => {
-                statusBadge.style.transform = 'scale(1.05)';
-                setTimeout(() => {
-                    statusBadge.style.transform = 'scale(1)';
-                }, 500);
-            }, 3000);
-        }
-    }
-
-    // Utilitários
+    // PRIMEIRO: DEFINIR AS FUNÇÕES UTILITÁRIAS
     function showToast(mensagem, tipo = 'info') {
-        // Usando Toastify ou similar
         if (typeof Toastify !== 'undefined') {
             Toastify({
                 text: mensagem,
@@ -283,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showLoading(mensagem) {
-        // Implementar loading overlay
         const loadingDiv = document.createElement('div');
         loadingDiv.id = 'loading-overlay';
         loadingDiv.innerHTML = `
@@ -316,6 +70,304 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingDiv.remove();
         }
     }
+
+    function confirmarAcao(titulo, mensagem, callback, tipo = 'warning') {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: titulo,
+                text: mensagem,
+                icon: tipo,
+                showCancelButton: true,
+                confirmButtonColor: tipo === 'danger' ? '#d33' : '#3085d6',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    callback();
+                }
+            });
+        } else {
+            if (confirm(mensagem)) {
+                callback();
+            }
+        }
+    }
+
+    function compartilharReserva() {
+        const dadosCompartilhamento = {
+            title: 'Minha Reserva - SpeedCar',
+            text: `Confira minha reserva #{{ reserva.id }} na SpeedCar - {{ reserva.grupo.nome }}`,
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            navigator.share(dadosCompartilhamento)
+                .then(() => showToast('Reserva compartilhada com sucesso!', 'success'))
+                .catch(error => {
+                    console.log('Erro ao compartilhar:', error);
+                    copiarParaAreaTransferencia();
+                });
+        } else {
+            copiarParaAreaTransferencia();
+        }
+    }
+
+    function copiarParaAreaTransferencia() {
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => showToast('Link copiado para área de transferência!', 'success'))
+            .catch(err => {
+                console.error('Erro ao copiar:', err);
+                showToast('Erro ao copiar link', 'error');
+            });
+    }
+
+    function abrirSuporte() {
+        const numeroSuporte = "5511999999999";
+        const mensagem = `Olá, preciso de ajuda com a reserva #{{ reserva.id }}`;
+        const urlWhatsapp = `https://wa.me/${numeroSuporte}?text=${encodeURIComponent(mensagem)}`;
+        
+        window.open(urlWhatsapp, '_blank');
+    }
+
+    // FUNÇÕES PARA ATUALIZAR STATUS
+    function getCSRFToken() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        return csrfToken ? csrfToken.value : '';
+    }
+
+    function atualizarStatusReserva(novoStatus) {
+        return new Promise((resolve, reject) => {
+             if (!RESERVA_ID) {
+                reject('ID da reserva não encontrado');
+                return;
+            }
+            
+            fetch(`/api/reservas/${RESERVA_ID}/atualizar-status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF_TOKEN,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    'status': novoStatus
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na resposta do servidor: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    resolve(data);
+                } else {
+                    reject(data.error || 'Erro desconhecido no servidor');
+                }
+            })
+            .catch(error => {
+                reject('Erro de conexão: ' + error.message);
+            });
+        });
+    }
+
+    function getStatusDescription(status) {
+        const descricoes = {
+            'pendente': 'Aguardando confirmação de pagamento',
+            'confirmada': 'Reserva confirmada - Aguardando retirada',
+            'ativa': 'Veículo em uso',
+            'concluida': 'Reserva finalizada com sucesso',
+            'cancelada': 'Reserva cancelada'
+        };
+        return descricoes[status] || 'Status desconhecido';
+    }
+
+    function atualizarInterfaceStatus(novoStatus) {
+        console.log(`🔄 Atualizando interface para status: ${novoStatus}`);
+        
+        const statusBadge = document.querySelector('.status-badge');
+        if (statusBadge) {
+            statusBadge.classList.remove('bg-warning', 'bg-success', 'bg-primary', 'bg-secondary', 'bg-danger');
+            
+            const classesStatus = {
+                'pendente': 'bg-warning',
+                'confirmada': 'bg-success', 
+                'ativa': 'bg-primary',
+                'concluida': 'bg-secondary',
+                'cancelada': 'bg-danger'
+            };
+            
+            statusBadge.className = `badge ${classesStatus[novoStatus] || 'bg-secondary'} status-badge`;
+            statusBadge.textContent = novoStatus.toUpperCase();
+        }
+
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = getStatusDescription(novoStatus);
+        }
+
+        setTimeout(() => {
+            location.reload();
+        }, 1500);
+    }
+
+    // FUNÇÕES PRINCIPAIS DE MUDANÇA DE STATUS
+    function realizarPagamento() {
+        showLoading('Processando pagamento...');
+        
+        atualizarStatusReserva('confirmada')
+            .then(() => {
+                hideLoading();
+                showToast('Pagamento confirmado! Status atualizado para CONFIRMADA.', 'success');
+                atualizarInterfaceStatus('confirmada');
+            })
+            .catch(error => {
+                hideLoading();
+                showToast('Erro ao processar pagamento: ' + error, 'error');
+            });
+    }
+
+    function realizarCheckin() {
+        showLoading('Realizando check-in...');
+        
+        atualizarStatusReserva('ativa')
+            .then(() => {
+                hideLoading();
+                showToast('Check-in realizado com sucesso! Status atualizado para ATIVA.', 'success');
+                atualizarInterfaceStatus('ativa');
+            })
+            .catch(error => {
+                hideLoading();
+                showToast('Erro ao realizar check-in: ' + error, 'error');
+            });
+    }
+
+    function realizarCheckout() {
+        showLoading('Realizando check-out...');
+        
+        atualizarStatusReserva('concluida')
+            .then(() => {
+                hideLoading();
+                showToast('Check-out realizado com sucesso! Status atualizado para CONCLUÍDA.', 'success');
+                atualizarInterfaceStatus('concluida');
+            })
+            .catch(error => {
+                hideLoading();
+                showToast('Erro ao realizar check-out: ' + error, 'error');
+            });
+    }
+
+    function cancelarReserva() {
+        showLoading('Cancelando reserva...');
+        
+        atualizarStatusReserva('cancelada')
+            .then(() => {
+                hideLoading();
+                showToast('Reserva cancelada com sucesso!', 'success');
+                atualizarInterfaceStatus('cancelada');
+                
+                setTimeout(() => {
+                    window.location.href = "{% url 'minhas_reservas' %}";
+                }, 3000);
+            })
+            .catch(error => {
+                hideLoading();
+                showToast('Erro ao cancelar reserva: ' + error, 'error');
+            });
+    }
+
+    // DEPOIS: INICIALIZAR OS BOTÕES
+    function initBotoesAcao() {
+        // Botão Imprimir
+        if (btnImprimir) {
+            btnImprimir.addEventListener('click', function() {
+                console.log("🖨️ Imprimindo reserva...");
+                window.print();
+                showToast('Preparando para impressão...', 'info');
+            });
+        }
+
+        // Botão Compartilhar
+        if (btnCompartilhar) {
+            btnCompartilhar.addEventListener('click', function() {
+                console.log("📤 Compartilhando reserva...");
+                compartilharReserva();
+            });
+        }
+
+        // Botão Pagamento
+        if (btnPagamento) {
+            btnPagamento.addEventListener('click', function() {
+                console.log("💳 Iniciando pagamento...");
+                confirmarAcao(
+                    'Confirmar Pagamento', 
+                    'Deseja confirmar o pagamento desta reserva?',
+                    realizarPagamento
+                );
+            });
+        }
+
+        // Botão Check-in
+        if (btnCheckin) {
+            btnCheckin.addEventListener('click', function() {
+                console.log("✅ Iniciando check-in...");
+                confirmarAcao(
+                    'Check-in', 
+                    'Deseja confirmar o check-in para esta reserva?',
+                    realizarCheckin
+                );
+            });
+        }
+
+        // Botão Check-out
+        if (btnCheckout) {
+            btnCheckout.addEventListener('click', function() {
+                console.log("🚗 Iniciando check-out...");
+                confirmarAcao(
+                    'Check-out', 
+                    'Deseja confirmar o check-out para esta reserva?',
+                    realizarCheckout
+                );
+            });
+        }
+
+        // Botão Alterar
+        if (btnAlterar) {
+            btnAlterar.addEventListener('click', function() {
+                console.log("✏️ Solicitando alteração...");
+                showToast('Redirecionando para alteração...', 'info');
+                setTimeout(() => {
+                    window.location.href = `/reserva/alterar/{{ reserva.id }}/`;
+                }, 1000);
+            });
+        }
+
+        // Botão Cancelar
+        if (btnCancelar) {
+            btnCancelar.addEventListener('click', function() {
+                console.log("❌ Solicitando cancelamento...");
+                confirmarAcao(
+                    'Cancelar Reserva', 
+                    'Tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita.',
+                    cancelarReserva,
+                    'danger'
+                );
+            });
+        }
+
+        // Botão Suporte
+        if (btnSuporte) {
+            btnSuporte.addEventListener('click', function() {
+                console.log("📞 Abrindo suporte...");
+                abrirSuporte();
+            });
+        }
+    }
+
+    // FINALMENTE: INICIALIZAR TUDO
+    initBotoesAcao();
 
     console.log("🎯 JavaScript do detalhes_reserva configurado com sucesso!");
 });

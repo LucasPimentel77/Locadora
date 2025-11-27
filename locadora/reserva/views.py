@@ -161,9 +161,11 @@ def detalhes_reserva(request, reserva_id):
         reserva = Reserva.objects.get(id=reserva_id)
         carros_grupo = Carro.objects.filter(grupo=reserva.grupo)
         imagem = carros_grupo.first().imagem if carros_grupo.exists() else None
+        capacidade = carros_grupo.first().capacidade if carros_grupo.exists() else None
         context = {
             'reserva': reserva,
-            'imagem': imagem
+            'imagem': imagem,
+            'capacidade': capacidade,
         }
         return render(request, 'reservas/detalhes_reserva.html', context)
     except Reserva.DoesNotExist:

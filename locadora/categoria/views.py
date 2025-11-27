@@ -4,6 +4,8 @@ from carros.models import Carro, GrupoCarro
 
 from .models import Categoria
 
+from django.db.models import Min
+
 # Create your views here.
 
 def categorias(request):
@@ -25,7 +27,8 @@ def categoria_detalhe(request, categoria_slug = None):
             'descricao': subgrupo.descricao,
             'preco_diaria': subgrupo.preco_diaria,
             'total_carros': carros.count(),
-            'carros': carros
+            'carros': carros,
+            'combustivel': subgrupo.combustivel,
         })
     
     # Marcas disponíveis para filtro

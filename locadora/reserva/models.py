@@ -42,7 +42,7 @@ class Reserva(models.Model):
         duracao = self.duracao_dias()
         valor_total = duracao * self.grupo.preco_diaria
         return valor_total
-    
+
     def set_pagamento(self, pagamento):
         self.pagamento = pagamento
         self.save()
