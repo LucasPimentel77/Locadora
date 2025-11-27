@@ -16,6 +16,8 @@ def categoria_detalhe(request, categoria_slug = None):
     
     # Pega todos os subgrupos ativos desta categoria
     subgrupos = GrupoCarro.objects.filter(categoria=categoria, ativo=True)
+
+    marcas = []
     
     # Adiciona carros e informações extras para cada subgrupo
     subgrupos_com_carros = []
@@ -31,10 +33,15 @@ def categoria_detalhe(request, categoria_slug = None):
             'combustivel': subgrupo.combustivel,
         })
     
-    # Marcas disponíveis para filtro
-    marcas = Carro.objects.filter( 
-        disponivel=True
-    ).values_list('marca', flat=True).distinct()
+        # Marcas disponíveis para filtro
+        marcas_grupo = Carro.objects.filter( 
+            grupo=subgrupo,
+            disponivel=True
+        ).values_list('marca', flat=True).distinct()
+
+        for marca in marcas_grupo:
+            if marca not in marcas:
+                marcas.append(marca)
     
     context = {
         'categoria': categoria,

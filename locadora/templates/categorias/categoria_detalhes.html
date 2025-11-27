@@ -9,50 +9,68 @@
         <!-- COLUNA DE FILTROS (ESQUERDA) -->
         <div class="col-lg-3 col-md-4">
             <div class="bg-light rounded-3 p-4 sticky-top" style="top: 20px;">
-                <h5 class="fw-bold text-primary mb-4">Filtros</h5>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-primary mb-0">Filtros</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="filtros.limparFiltros()">
+                        <i class="fas fa-times me-1"></i>Limpar
+                    </button>
+                </div>
                 
                 <!-- Filtro por Marca -->
                 <div class="mb-4">
-                    <h6 class="fw-semibold mb-3">Marca</h6>
-                    {% for marca in marcas %}
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="marca{{ forloop.counter }}">
-                        <label class="form-check-label" for="marca{{ forloop.counter }}">
-                            {{ marca }}
-                        </label>
+                    <h6 class="fw-semibold mb-3">
+                        <i class="fas fa-tags me-2"></i>Marca
+                    </h6>
+                    <div class="marcas-container" style="max-height: 200px; overflow-y: auto;">
+                        {% for marca in marcas %}
+                        <div class="form-check">
+                            <input class="form-check-input filtro-marca" 
+                                   type="checkbox" 
+                                   id="marca{{ forloop.counter }}"
+                                   value="{{ marca }}">
+                            <label class="form-check-label" for="marca{{ forloop.counter }}">
+                                {{ marca }}
+                            </label>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
 
                 <!-- Filtro por Disponibilidade -->
                 <div class="mb-4">
-                    <h6 class="fw-semibold mb-3">Disponibilidade</h6>
+                    <h6 class="fw-semibold mb-3">
+                        <i class="fas fa-calendar-check me-2"></i>Disponibilidade
+                    </h6>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="disponivel" checked>
                         <label class="form-check-label" for="disponivel">
-                            Disponível agora
+                            <i class="fas fa-check-circle text-success me-1"></i>Disponível agora
                         </label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="reservado">
                         <label class="form-check-label" for="reservado">
-                            Disponível em breve
+                            <i class="fas fa-clock text-warning me-1"></i>Disponível em breve
                         </label>
                     </div>
                 </div>
 
                 <!-- Filtro por Preço -->
                 <div class="mb-4">
-                    <h6 class="fw-semibold mb-3">Preço Diária</h6>
-                    <input type="range" class="form-range" min="0" max="500" step="10" id="precoRange">
-                    <div class="d-flex justify-content-between">
-                        <small>R$ 0</small>
-                        <small>R$ 500</small>
+                    <h6 class="fw-semibold mb-3">
+                        <i class="fas fa-dollar-sign me-2"></i>Preço Diária
+                    </h6>
+                    <input type="range" class="form-range" min="{{categoria.menor_preco}}" max="{{categoria.maior_preco}}" step="10" 
+                           id="precoRange" value="{{categoria.maior_preco}}">
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted">R$ {{categoria.menor_preco}}</small>
+                        <span class="badge bg-primary preco-display">Até R$ {{categoria.maior_preco}}</span>
+                        <small class="text-muted">R$ {{categoria.maior_preco}}</small>
                     </div>
                 </div>
 
                 <!-- Botão Aplicar Filtros -->
-                <button class="btn btn-primary w-100 mt-3">
+                <button class="btn btn-primary w-100 mt-3" id="btnAplicarFiltros">
                     <i class="fas fa-filter me-2"></i>Aplicar Filtros
                 </button>
             </div>
@@ -61,16 +79,24 @@
         <!-- CONTEÚDO PRINCIPAL (DIREITA) -->
         <div class="col-lg-9 col-md-8">
             <!-- Cabeçalho da Categoria -->
-            <div class="row mb-5">
+            <div class="row mb-4">
                 <div class="col">
                     <h1 class="fw-bold text-primary">{{ categoria.icone }} {{ categoria.nome }}</h1>
                     <p class="lead text-muted">{{ categoria.descricao }}</p>
+                    <div class="d-flex gap-3">
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-car me-1"></i>{{ total_carros }} carros
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-tags me-1"></i>{{ marcas|length }} marcas
+                        </span>
+                    </div>
                 </div>
             </div>
 
             <!-- SUBGRUPOS DA CATEGORIA -->
             {% for subgrupo in subgrupos %}
-            <div class="card border-0 shadow-sm mb-5">
+            <div class="card border-0 shadow-sm mb-5" data-subgrupo="{{ subgrupo.nome }}">
                 <div class="card-body">
                     <!-- Cabeçalho do Subgrupo -->
                     <div class="row align-items-center mb-4">
@@ -88,11 +114,15 @@
 
                     <!-- Carousel de Carros do Subgrupo -->
                     <div class="position-relative">
-                        <div class="carousel-container" style="overflow-x: auto; scroll-behavior: smooth;" id="carousel{{ forloop.counter }}">
+                        <div class="carousel-container" style="overflow-x: auto; scroll-behavior: smooth;" 
+                             id="carousel{{ forloop.counter }}">
                             <div class="d-flex gap-3 pb-3">
                                 {% for carro in subgrupo.carros %}
                                 <div class="flex-shrink-0" style="width: 280px;">
-                                    <div class="card car-card border-0 shadow-sm h-100">
+                                    <div class="card car-card border-0 shadow-sm h-100" 
+                                         data-marca="{{ carro.marca }}"
+                                         data-preco="{{ subgrupo.preco_diaria }}"
+                                         data-disponivel="true">
                                         {% if carro.imagem %}
                                         <img src="{{ carro.imagem.url }}" 
                                              class="card-img-top" 
@@ -122,7 +152,7 @@
                             </div>
                         </div>
                         
-                        <!-- Setas de Navegação (apenas se tiver mais de 4 carros) -->
+                        <!-- Setas de Navegação -->
                         {% if subgrupo.carros|length > 4 %}
                         <button class="carousel-prev btn btn-light rounded-circle position-absolute top-50 start-0 translate-middle-y"
                                 onclick="scrollCarousel('carousel{{ forloop.counter }}', -280)"
@@ -145,33 +175,30 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/filtros_categoria.js' %}"></script>
 <script>
-function scrollCarousel(carouselId, distance) {
-    const carousel = document.getElementById(carouselId);
-    carousel.scrollBy({ left: distance, behavior: 'smooth' });
-}
+// Variável global para acessar os filtros
+let filtros;
 
-// JavaScript para os filtros
 document.addEventListener('DOMContentLoaded', function() {
-    // Filtro de preço
-    const priceRange = document.getElementById('precoRange');
-    if (priceRange) {
-        priceRange.addEventListener('input', function() {
-            // Aqui você implementaria a lógica de filtro
-            console.log('Preço selecionado:', this.value);
-        });
-    }
+    filtros = new FiltrosCategoria();
+    
+    // Função para scroll do carousel
+    window.scrollCarousel = function(carouselId, distance) {
+        const carousel = document.getElementById(carouselId);
+        carousel.scrollBy({ left: distance, behavior: 'smooth' });
+    };
 });
 </script>
 
 <style>
 .carousel-container {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .carousel-container::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
 }
 
 .carousel-prev, .carousel-next {
@@ -193,6 +220,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .sticky-top {
     position: sticky;
+}
+
+.marcas-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.marcas-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 2px;
 }
 </style>
 {% endblock %}

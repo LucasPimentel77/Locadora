@@ -49,6 +49,19 @@ class Categoria(models.Model):
         ).aggregate(menor_preco=Min('preco_diaria'))
         
         return resultado['menor_preco'] or 0
+    
+    def maior_preco(self):
+        """
+        Retorna o maior preço entre todos os grupos desta categoria
+        """
+        from carros.models import GrupoCarro  # Import aqui para evitar circular import
+        
+        resultado = GrupoCarro.objects.filter(
+            categoria=self,
+            ativo=True
+        ).aggregate(maior_preco=models.Max('preco_diaria'))
+        
+        return resultado['maior_preco'] or 0
 
     # Property para pegar o ícone correto
     @property
