@@ -7,7 +7,6 @@ Sistema web para locação de veículos desenvolvido como trabalho acadêmico pa
 ### 🎯 Objetivos do Trabalho
 - Desenvolver uma aplicação web completa utilizando Django
 - Implementar interface responsiva com Bootstrap
-- Aplicar conceitos de arquitetura MVC
 - Gerenciar versionamento com Git
 - Praticar deploy de aplicações web
 
@@ -29,3 +28,10 @@ Sistema web para locação de veículos desenvolvido como trabalho acadêmico pa
 - **Git & GitHub**
 - **GitHub Codespaces**
 - **VS Code**
+
+## 🚀 Como Executar o Projeto
+
+### 1️⃣ Clonar o repositório
+```bash
+git clone https://github.com/usuario/speedcar.git
+cd speedcar
