@@ -63,11 +63,6 @@ def finalizar_reserva(request, slug_grupo):
             data_retirada = request.session.get('data_retirada')  # Buscar da sessão
             data_devolucao = request.session.get('data_devolucao')  # Buscar da sessão
             
-            #==============TESTE=====================
-            # metodo_id = 1
-            # cupom_codigo = ''
-            # data_retirada = "2025-11-15 10:00"
-            # data_devolucao = "2025-11-20 14:00"
             
             # Validar dados obrigatórios
             if not metodo_id:
@@ -133,12 +128,12 @@ def finalizar_reserva(request, slug_grupo):
             if 'data_devolucao' in request.session:
                 del request.session['data_devolucao']
             
-            # Mensagem de sucesso
-            messages.success(
+            # Mensagem para o usuario
+            messages.warning(
                 request, 
-                f"Reserva #{reserva.id} confirmada! " +
-                f"Valor total: R$ {pagamento.valor_final:.2f}. " +
-                "Verifique seu e-mail para mais detalhes."
+                f"Reserva #{reserva.id} pendente! " +
+                f"faça o pagamento de R$ {pagamento.valor_final:.2f}. " +
+                "para confirmar a sua reserva."
             )
             
             print(f' reserva id: {reserva.id} ')

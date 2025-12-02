@@ -1,8 +1,11 @@
-<!-- Navbar Centralizada - ESTILO ORIGINAL -->
+<!-- Navbar COM ACESSO ADMIN -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="{% url 'home' %}">
             <i class="fas fa-car me-2"></i>SpeedCar
+            {% if user.is_superuser or user.is_staff %}
+            <span class="badge bg-danger ms-2">ADMIN</span>
+            {% endif %}
         </a>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -23,44 +26,84 @@
                     </a>
                 </li>
 
-
-                <!-- Categorias Dropdown -->
-                <li class="nav-item dropdown me-2">
-                    <a class="nav-link dropdown-toggle px-3" href="#" id="categoriasDropdown" role="button" 
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-tags me-1"></i>Categorias
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="categoriasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-tag me-1"></i>Categorias
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="categoriasDropdown">
-                         <li>
-                            <a class="dropdown-item fw-bold text-primary" href="{% url 'categorias' %}">
-                                <i class="fas fa-th-list me-2"></i>Todas as Categorias
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        {% for categoria in categorias %}
                         <li>
-                            <a class="dropdown-item" href="{% url 'categoria_detalhe' categoria.slug %}">
-                                <span class="me-2">{{ categoria.icone }}</span>
-                                {{ categoria.nome }}
+                            <a class="dropdown-item" href="{% url 'categorias' %}">
+                                <i class="fas fa-list me-2"></i>Todos as categorias
                             </a>
                         </li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        {% for cat in categorias %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'categoria_detalhe' cat.slug %}">
+                                    <span class="me-2">{{ cat.icone }}</span>{{cat.nome}}
+                                </a>
+                            </li>
                         {% endfor %}
                     </ul>
                 </li>
-
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-phone me-1"></i>Fale Conosco
+                
+                <!-- MENU ADMIN - APENAS PARA SUPERUSUÁRIOS/STAFF -->
+                {% if user.is_superuser or user.is_staff %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-crown me-1"></i>Admin
                     </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-cog me-2"></i>Painel Admin
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'calendario_reservas' %}">
+                                <i class="fas fa-calendar-alt me-2"></i>Calendário
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-list-alt me-2"></i>Gerenciar Reservas
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-chart-bar me-2"></i>Relatórios
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-car-side me-2"></i>Gerenciar Frota
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-users me-2"></i>Gerenciar Usuários
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'minhas_reservas' %}">
-                        <i class="fas fa-calendar-alt me-1"></i>Minhas Reservas
-                    </a>
-                </li>
+                {% else %}
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'minhas_reservas' %}">
+                            <i class="fas fa-calendar-alt me-1"></i>Minhas Reservas
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-phone me-1"></i>Fale Conosco
+                        </a>
+                    </li>
                 {% endif %}
+                
+                
             </ul>
             
             <!-- Área do Usuário -->
@@ -69,7 +112,13 @@
                 <!-- Usuário Logado -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                        <i class="fas fa-user-circle me-1"></i>
+                        {{ user.username }}
+                        {% if user.is_superuser %}
+                        <span class="badge bg-warning text-dark ms-1">SUPER</span>
+                        {% elif user.is_staff %}
+                        <span class="badge bg-info ms-1">STAFF</span>
+                        {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
@@ -82,7 +131,23 @@
                                 <i class="fas fa-user me-2"></i>Meu Perfil
                             </a>
                         </li>
+                        
+                        <!-- OPÇÕES ADMIN NO DROPDOWN -->
+                        {% if user.is_superuser or user.is_staff %}
                         <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-warning" href="#">
+                                <i class="fas fa-calendar me-2"></i>Calendário
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-warning" href="#">
+                                <i class="fas fa-edit me-2"></i>Editar Reservas
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        
                         <li>
                             <a class="dropdown-item text-danger" href="{% url 'logout' %}">
                                 <i class="fas fa-sign-out-alt me-2"></i>Sair
