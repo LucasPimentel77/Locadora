@@ -33,5 +33,29 @@ Sistema web para locação de veículos desenvolvido como trabalho acadêmico pa
 
 ### 1️⃣ Clonar o repositório
 ```bash
-git clone https://github.com/usuario/speedcar.git
-cd speedcar
+git clone https://github.com/LucasPimentel77/Locadora.git
+cd Locadora/locadora
+```
+
+###2️⃣ Criar e ativar ambiente virtual
+```bash
+python -m venv venv
+source venv/bin/activate   # Linux/macOS
+venv\Scripts\activate      # Windows
+```
+
+###3️⃣ Instalar dependências
+```bash
+pip install -r requirements.txt
+```
+
+###4️⃣ Aplicar migrações
+```bash
+python manage.py migrate
+```
+
+###5️⃣ Rodar o servidor
+```bash
+python manage.py runserver
+```
+Acesse em: [http://127.0.0.1:8000]
