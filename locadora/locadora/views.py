@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 def home(request):
     return render(request, 'home.html')
 
-@login_required(login_url='/login/')
+@login_required(login_url='login')
 def alugar(request):
     horarios = [f"{h:02d}:00" for h in range(8, 21)]
     data_hoje = timezone.now().date()
@@ -72,7 +72,7 @@ def alugar(request):
             # Verificar disponibilidade por subgrupo
             grupos_ativos = GrupoCarro.objects.filter(ativo=True)
             grupos_inativos = GrupoCarro.objects.filter(ativo=False)
-            subgrupos_indisponiveis.append(*grupos_inativos)
+            subgrupos_indisponiveis.append(grupo for grupo in grupos_inativos)
 
             print(f"📋 Grupos ativos encontrados: {grupos_ativos.count()}")
             
