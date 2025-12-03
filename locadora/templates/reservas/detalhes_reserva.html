@@ -294,18 +294,24 @@
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         {% if reserva.status == 'confirmada' %}
-                        <button class="btn btn-success" id="btn-checkin">
-                            <i class="fas fa-check-circle me-2"></i>Fazer Check-in
-                        </button>
+
+                            {% if user.is_superuser or user.is_staff%}
+                            <button class="btn btn-success" id="btn-checkin">
+                                <i class="fas fa-check-circle me-2"></i>Fazer Check-in
+                            </button>
+                            {% endif %}
+
                         <button class="btn btn-outline-primary" id="btn-alterar">
                             <i class="fas fa-edit me-2"></i>Alterar Reserva
                         </button>
                         {% endif %}
                         
                         {% if reserva.status == 'ativa' %}
-                        <button class="btn btn-warning" id="btn-checkout">
-                            <i class="fas fa-sign-out-alt me-2"></i>Fazer Check-out
-                        </button>
+                            {% if user.is_superuser or user.is_staff%}
+                            <button class="btn btn-warning" id="btn-checkout">
+                                <i class="fas fa-sign-out-alt me-2"></i>Fazer Check-out
+                            </button>
+                            {% endif %}
                         {% endif %}
 
                         {% if reserva.status == 'pendente' %}

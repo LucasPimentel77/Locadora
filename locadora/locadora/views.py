@@ -71,12 +71,16 @@ def alugar(request):
 
             # Verificar disponibilidade por subgrupo
             grupos_ativos = GrupoCarro.objects.filter(ativo=True)
+            grupos_inativos = GrupoCarro.objects.filter(ativo=False)
+            subgrupos_indisponiveis.append(*grupos_inativos)
+
             print(f"📋 Grupos ativos encontrados: {grupos_ativos.count()}")
             
             for subgrupo in grupos_ativos:
                 carros_disponiveis = verificar_disponibilidade(subgrupo, dt_retirada, dt_devolucao)
                 carros_subgrupo = Carro.objects.filter(grupo=subgrupo, disponivel=True)
                 imagem = carros_subgrupo.first().imagem if carros_subgrupo.exists() else None
+                capacidade = carros_subgrupo.first().capacidade if carros_subgrupo.exists() else None
 
                 subgrupo_data = {
                     'nome': subgrupo.nome,
@@ -87,6 +91,8 @@ def alugar(request):
                     'carros_subgrupo': carros_subgrupo,
                     'icone': subgrupo.categoria.icone,
                     'imagem': imagem.url if imagem else None,
+                    'capacidade': capacidade,
+                    'combustivel': subgrupo.combustivel,
                 }
                 
                 if carros_disponiveis > 0:
@@ -146,7 +152,7 @@ def verificar_disponibilidade(subgrupo, dt_retirada, dt_devolucao):
         grupo=subgrupo,
         data_retirada__lt=dt_devolucao,
         data_devolucao__gt=dt_retirada,
-        status__in=['confirmada', 'ativa']
+        status__in=['confirmada', 'ativa', 'pendente']
     )
     
     numero_reservas = reservas_conflitantes.count()

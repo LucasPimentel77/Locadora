@@ -196,45 +196,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         
-                                        <!-- Ações por Status -->
-                                        {% if reserva.status == 'pendente' %}
-                                        <button class="btn btn-success btn-sm"
-                                                onclick="confirmarAcao('confirmar', '{{ reserva.id }}')">
-                                            <i class="fas fa-check me-1"></i>Confirmar
-                                        </button>
-                                        <button class="btn btn-danger btn-sm"
-                                                onclick="confirmarAcao('cancelar', '{{ reserva.id }}')">
-                                            <i class="fas fa-times me-1"></i>Cancelar
-                                        </button>
-                                        
-                                        {% elif reserva.status == 'confirmada' %}
-                                        <button class="btn btn-primary btn-sm"
-                                                onclick="confirmarAcao('checkin', '{{ reserva.id }}')">
-                                            <i class="fas fa-key me-1"></i>Check-in
-                                        </button>
-                                        <button class="btn btn-danger btn-sm"
-                                                onclick="confirmarAcao('cancelar', '{{ reserva.id }}')">
-                                            <i class="fas fa-times me-1"></i>Cancelar
-                                        </button>
-                                        
-                                        {% elif reserva.status == 'ativa' %}
-                                        <button class="btn btn-info btn-sm"
-                                                onclick="confirmarAcao('checkout', '{{ reserva.id }}')">
-                                            <i class="fas fa-flag-checkered me-1"></i>Check-out
-                                        </button>
-                                        
-                                        {% elif reserva.status == 'concluida' %}
-                                        <button class="btn btn-secondary btn-sm"
-                                                onclick="confirmarAcao('reabrir', '{{ reserva.id }}')">
-                                            <i class="fas fa-redo me-1"></i>Reabrir
-                                        </button>
-                                        
-                                        {% elif reserva.status == 'cancelada' %}
-                                        <button class="btn btn-warning btn-sm"
-                                                onclick="confirmarAcao('reativar', '{{ reserva.id }}')">
-                                            <i class="fas fa-play me-1"></i>Reativar
-                                        </button>
-                                        {% endif %}
+                                    
                                     </div>
                                 </div>
                             </div>
@@ -271,4 +233,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/admin/gerenciar_reservas.js' %}"></script>
+<script src="{% static 'js/detalhes_reserva.js' %}"></script>
 {% endblock %}

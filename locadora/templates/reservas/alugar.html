@@ -95,17 +95,26 @@
 
     <!-- Resultados - Subgrupos Disponíveis -->
     <div id="resultados" class="{% if foi_submetido %}{% else %}d-none{% endif %}">
-        <h2 class="fw-bold text-primary mb-4">
-            {% if foi_submetido %}
-                {% if subgrupos_disponiveis %}Subgrupos Disponíveis{% else %}Resultados da Busca{% endif %}
-            {% else %}
-                Subgrupos Disponíveis
-            {% endif %}
-        </h2>
+    <h2 class="fw-bold text-primary mb-4">
+        {% if foi_submetido %}
+            {% if subgrupos_disponiveis %}Subgrupos Disponíveis{% else %}Resultados da Busca{% endif %}
+        {% else %}
+            Subgrupos Disponíveis
+        {% endif %}
+    </h2>
 
-        <div class="row g-4">
-            {% if foi_submetido %}
-                <!-- Só mostra resultados se o formulário foi submetido -->
+    <div class="row g-4">
+        {% if foi_submetido %}
+            <!-- Só mostra resultados se o formulário foi submetido -->
+            
+            <!-- SEÇÃO 1: SUBGRUPOS DISPONÍVEIS -->
+            {% if subgrupos_disponiveis %}
+                <div class="col-12">
+                    <h4 class="text-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Disponíveis
+                    </h4>
+                </div>
+                
                 {% for subgrupo in subgrupos_disponiveis %}
                 <div class="col-lg-3">
                     <div class="card border-0 shadow-sm h-100 disponivel alugar-card">
@@ -135,9 +144,9 @@
                             <!-- Características -->
                             <div class="mb-3">
                                 <small class="text-muted">
-                                    <i class="fas fa-users me-1"></i>5 passageiros • 
+                                    <i class="fas fa-users me-1"></i>{{subgrupo.capacidade}} passageiros • 
                                     <i class="fas fa-snowflake me-1"></i>Ar-condicionado • 
-                                    <i class="fas fa-gas-pump me-1"></i>Flex
+                                    <i class="fas fa-gas-pump me-1"></i>{{subgrupo.combustivel}}
                                 </small>
                             </div>
 
@@ -154,8 +163,80 @@
                         </div>
                     </div>
                 </div>
-                {% empty %}
-                <!-- Só mostra "nenhum disponível" se foi submetido e não encontrou nada -->
+                {% endfor %}
+            {% endif %}
+            
+            <!-- SEÇÃO 2: SUBGRUPOS INDISPONÍVEIS -->
+            {% if subgrupos_indisponiveis %}
+                <div class="col-12 mt-5">
+                    <h4 class="text-danger mb-3">
+                        <i class="fas fa-times-circle me-2"></i>Indisponíveis
+                        <small class="text-muted fs-6">(Para as datas selecionadas)</small>
+                    </h4>
+                </div>
+                
+                {% for subgrupo in subgrupos_indisponiveis %}
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm h-100 indisponivel-card" style="filter: grayscale(100%); opacity: 0.7; position: relative;">
+                        <!-- Overlay vermelho "INDISPONÍVEL" -->
+                        <div class="indisponivel-overlay">
+                            <div class="indisponivel-texto">
+                                <i class="fas fa-ban fa-3x mb-2"></i>
+                                <h4 class="fw-bold">INDISPONÍVEL</h4>
+                            </div>
+                        </div>
+                        
+                        <!-- IMAGEM DE CAPA (em preto e branco) -->
+                        {% if subgrupo.imagem %}
+                        <img src="{{ subgrupo.imagem }}" class="card-img-top" alt="{{ subgrupo.nome }}" style="height: 200px; object-fit: contain;object-position: center">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-car fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="card-title fw-bold text-muted">
+                                       {{subgrupo.icone}} {{ subgrupo.nome }}
+                                    </h4>
+                                    <small class="text-muted">
+                                    {% for carro in subgrupo.carros_subgrupo %}
+                                        {{ carro.nome }}{% if not forloop.last %} | {% endif %}
+                                    {% endfor %}
+                                </small> 
+                                </div>
+                                <span class="badge bg-danger fs-6">Indisponível</span>
+                            </div>
+
+                            <!-- Características -->
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>5 passageiros • 
+                                    <i class="fas fa-snowflake me-1"></i>Ar-condicionado • 
+                                    <i class="fas fa-gas-pump me-1"></i>Flex
+                                </small>
+                            </div>
+
+                            <!-- Preço e Ação (desabilitado) -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="h4 text-muted fw-bold">R$ {{ subgrupo.preco_diaria }}</span>
+                                    <small class="text-muted d-block">/ dia</small>
+                                </div>
+                                <button class="btn btn-secondary" disabled>
+                                    Indisponível
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- SE NÃO HOUVER NENHUM DISPONÍVEL -->
+            {% if not subgrupos_disponiveis and not subgrupos_indisponiveis %}
                 <div class="col-12">
                     <div class="alert alert-warning text-center">
                         <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
@@ -163,18 +244,19 @@
                         <p class="mb-0">Tente alterar as datas ou horários de retirada/devolução.</p>
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <!-- Mensagem enquanto não busca -->
-                <div class="col-12">
-                    <div class="text-center py-4">
-                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
-                        <p class="text-muted">Preencha as datas acima e clique em "Verificar Disponibilidade"</p>
-                    </div>
-                </div>
             {% endif %}
-        </div>
+            
+        {% else %}
+            <!-- Mensagem enquanto não busca -->
+            <div class="col-12">
+                <div class="text-center py-4">
+                    <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">Preencha as datas acima e clique em "Verificar Disponibilidade"</p>
+                </div>
+            </div>
+        {% endif %}
     </div>
+</div>
 
     <!-- Mensagem inicial - só mostra quando NÃO foi submetido -->
     <div id="sem-resultados" class="text-center py-5 {% if foi_submetido %}d-none{% endif %}">
