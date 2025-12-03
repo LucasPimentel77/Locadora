@@ -1,0 +1,147 @@
+/* static/css/admin.css */
+
+/* Cards de Reservas */
+.admin-reserva-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left-width: 5px !important;
+}
+
+.admin-reserva-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+}
+
+/* Cores das bordas por status */
+.admin-border-pendente { border-left-color: #ffc107 !important; }
+.admin-border-confirmada { border-left-color: #28a745 !important; }
+.admin-border-ativa { border-left-color: #007bff !important; }
+.admin-border-concluida { border-left-color: #6c757d !important; }
+.admin-border-cancelada { border-left-color: #dc3545 !important; }
+
+/* Sidebar de filtros */
+.admin-filter-sidebar {
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+}
+
+/* Badges de status */
+.admin-status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Tooltips personalizados */
+.admin-tooltip-inner {
+    max-width: 300px;
+    text-align: left;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .admin-reserva-card .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .admin-filter-sidebar {
+        position: static;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Paginação */
+.admin-pagination .page-link {
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.admin-pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Loading overlay */
+.admin-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: white;
+}
+
+/* Mensagens de alerta */
+.admin-alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Botões de ação */
+.admin-action-btn {
+    min-width: 100px;
+    transition: all 0.2s;
+}
+
+.admin-action-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Grid de reservas */
+.admin-reserva-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+/* Cards vazios/placeholder */
+.admin-empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.admin-empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Contadores e estatísticas */
+.admin-stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.admin-stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Filtros */
+.admin-filter-group {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-filter-group:last-child {
+    border-bottom: none;
+}

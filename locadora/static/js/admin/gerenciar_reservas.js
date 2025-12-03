@@ -1,0 +1,354 @@
+// static/js/admin_reservas.js
+
+class AdminReservasManager {
+    constructor() {
+        this.csrfToken = this.getCSRFToken();
+        this.init();
+    }
+
+    init() {
+        console.log('🎯 Admin Reservas Manager inicializado');
+        this.setupEventListeners();
+        this.setupTooltips();
+        this.setupAutoRefresh();
+    }
+
+    setupEventListeners() {
+        // Filtro por status
+        const statusSelect = document.querySelector('select[name="status"]');
+        if (statusSelect) {
+            statusSelect.addEventListener('change', () => {
+                this.submitFilterForm();
+            });
+        }
+
+        // Botão exportar
+        const exportBtn = document.querySelector('button[onclick*="exportarParaCSV"]');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.exportarParaCSV();
+            });
+        }
+
+        // Clique em cards para ver detalhes
+        const cards = document.querySelectorAll('.admin-reserva-card');
+        cards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Evita abrir detalhes quando clicar em botões
+                if (!e.target.closest('button, a')) {
+                    const reservaId = card.id.split('-')[1];
+                    this.verDetalhes(reservaId);
+                }
+            });
+        });
+
+        // Observar mudanças nos filtros de data
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                setTimeout(() => this.submitFilterForm(), 300);
+            });
+        });
+    }
+
+    setupTooltips() {
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(tooltip => {
+            new bootstrap.Tooltip(tooltip, {
+                trigger: 'hover',
+                placement: 'top'
+            });
+        });
+    }
+
+    setupAutoRefresh() {
+        // Auto-refresh a cada 30 segundos se houver reservas ativas/pendentes
+        const hasActiveReservas = document.querySelectorAll('.admin-reserva-card').length > 0;
+        
+        if (hasActiveReservas) {
+            setInterval(() => {
+                this.checkForUpdates();
+            }, 30000); // 30 segundos
+        }
+    }
+
+    submitFilterForm() {
+        document.getElementById('filtroForm').submit();
+    }
+
+    confirmarAcao(acao, reservaId) {
+        const mensagens = {
+            'confirmar': {
+                title: 'Confirmar Reserva',
+                text: 'Deseja confirmar esta reserva? O status será alterado para CONFIRMADA.',
+                icon: 'question',
+                confirmText: 'Sim, confirmar',
+                cancelText: 'Cancelar'
+            },
+            'cancelar': {
+                title: 'Cancelar Reserva',
+                text: 'Deseja cancelar esta reserva? Esta ação não pode ser desfeita.',
+                icon: 'warning',
+                confirmText: 'Sim, cancelar',
+                cancelText: 'Manter'
+            },
+            'checkin': {
+                title: 'Realizar Check-in',
+                text: 'Deseja realizar o check-in? O status será alterado para ATIVA.',
+                icon: 'info',
+                confirmText: 'Sim, fazer check-in',
+                cancelText: 'Cancelar'
+            },
+            'checkout': {
+                title: 'Realizar Check-out',
+                text: 'Deseja realizar o check-out? O status será alterado para CONCLUÍDA.',
+                icon: 'success',
+                confirmText: 'Sim, finalizar',
+                cancelText: 'Ainda não'
+            },
+            'reabrir': {
+                title: 'Reabrir Reserva',
+                text: 'Deseja reabrir esta reserva concluída?',
+                icon: 'question',
+                confirmText: 'Sim, reabrir',
+                cancelText: 'Manter'
+            },
+            'reativar': {
+                title: 'Reativar Reserva',
+                text: 'Deseja reativar esta reserva cancelada?',
+                icon: 'warning',
+                confirmText: 'Sim, reativar',
+                cancelText: 'Manter cancelada'
+            }
+        };
+
+        const config = mensagens[acao] || {
+            title: 'Confirmar Ação',
+            text: 'Deseja realizar esta ação?',
+            icon: 'question',
+            confirmText: 'Confirmar',
+            cancelText: 'Cancelar'
+        };
+
+        // Usar SweetAlert2 se disponível, senão confirm nativo
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: config.title,
+                text: config.text,
+                icon: config.icon,
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: config.confirmText,
+                cancelButtonText: config.cancelText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.executarAcao(acao, reservaId);
+                }
+            });
+        } else {
+            if (confirm(config.text)) {
+                this.executarAcao(acao, reservaId);
+            }
+        }
+    }
+
+    executarAcao(acao, reservaId) {
+        this.mostrarLoading(`Executando ${acao}...`);
+
+        fetch(`/api/admin/reservas/${reservaId}/${acao}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': this.csrfToken,
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                observacao: `Ação executada por ${document.body.dataset.currentUser || 'admin'}`
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            this.esconderLoading();
+            
+            if (data.success) {
+                this.mostrarMensagem(data.message || 'Ação realizada com sucesso!', 'success');
+                
+                // Recarregar após 1.5 segundos
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                this.mostrarMensagem(data.error || 'Erro ao executar ação', 'error');
+            }
+        })
+        .catch(error => {
+            this.esconderLoading();
+            this.mostrarMensagem(`Erro de conexão: ${error.message}`, 'error');
+            console.error('Erro na requisição:', error);
+        });
+    }
+
+
+    carregarDetalhesModal(reservaId) {
+        // Implementar carregamento de modal com detalhes
+        console.log(`Carregando detalhes da reserva ${reservaId} em modal`);
+        // TODO: Implementar modal de detalhes
+        window.open(`/admin/reservas/${reservaId}/detalhes/`, '_blank');
+    }
+
+    exportarParaCSV() {
+        const params = new URLSearchParams(window.location.search);
+        const url = `/api/admin/reservas/exportar/?${params.toString()}`;
+        
+        this.mostrarLoading('Gerando arquivo CSV...');
+        
+        fetch(url, {
+            headers: {
+                'X-CSRFToken': this.csrfToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao exportar');
+            return response.blob();
+        })
+        .then(blob => {
+            this.esconderLoading();
+            
+            // Criar link de download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reservas_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            this.mostrarMensagem('Arquivo CSV baixado com sucesso!', 'success');
+        })
+        .catch(error => {
+            this.esconderLoading();
+            this.mostrarMensagem(`Erro ao exportar: ${error.message}`, 'error');
+        });
+    }
+
+    checkForUpdates() {
+        // Verificar se há novas reservas sem recarregar toda a página
+        fetch(window.location.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, 'text/html');
+            const newCount = newDoc.querySelector('.badge.bg-primary')?.textContent;
+            const currentCount = document.querySelector('.badge.bg-primary')?.textContent;
+            
+            if (newCount && newCount !== currentCount) {
+                this.mostrarMensagem(`Atualização: ${newCount} reservas disponíveis`, 'info');
+            }
+        })
+        .catch(error => console.log('Erro ao verificar atualizações:', error));
+    }
+
+    // Utilitários
+    mostrarLoading(mensagem) {
+        // Remover loading anterior se existir
+        this.esconderLoading();
+        
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'admin-loading-overlay';
+        loadingDiv.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2">${mensagem}</p>
+            </div>
+        `;
+        loadingDiv.id = 'admin-loading';
+        document.body.appendChild(loadingDiv);
+    }
+
+    esconderLoading() {
+        const loadingDiv = document.getElementById('admin-loading');
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
+    }
+
+    mostrarMensagem(mensagem, tipo = 'info') {
+        // Usar Toastify se disponível
+        if (typeof Toastify !== 'undefined') {
+            Toastify({
+                text: mensagem,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: this.getCorMensagem(tipo),
+            }).showToast();
+        } else {
+            // Fallback para alerta Bootstrap
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo} alert-dismissible fade show position-fixed admin-alert`;
+            alertDiv.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+            `;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${this.getIconeMensagem(tipo)} me-2"></i>
+                ${mensagem}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+    }
+
+    getCSRFToken() {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        return token ? token.value : '';
+    }
+
+    getCorMensagem(tipo) {
+        const cores = {
+            'success': '#28a745',
+            'error': '#dc3545',
+            'warning': '#ffc107',
+            'info': '#17a2b8'
+        };
+        return cores[tipo] || '#17a2b8';
+    }
+
+    getIconeMensagem(tipo) {
+        const icones = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        return icones[tipo] || 'info-circle';
+    }
+}
+
+// Inicializar quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', function() {
+    window.adminReservas = new AdminReservasManager();
+});

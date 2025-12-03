@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Calendário de Reservas - Admin{% endblock %}
 
@@ -12,16 +11,21 @@
                 <h1 class="h3 fw-bold text-primary">
                     <i class="fas fa-calendar-alt me-2"></i>Calendário de Reservas
                 </h1>
-                <div class="btn-group">
-                    <a href="?ano={{ mes_anterior.0 }}&mes={{ mes_anterior.1 }}" 
-                       class="btn btn-outline-primary">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                    <span class="btn btn-primary">{{ mes_nome }} de {{ ano }}</span>
-                    <a href="?ano={{ mes_proximo.0 }}&mes={{ mes_proximo.1 }}" 
-                       class="btn btn-outline-primary">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">
+                        {{ total_reservas_mes }} reservas este mês
+                    </span>
+                    <div class="btn-group">
+                        <a href="?ano={{ mes_anterior.0 }}&mes={{ mes_anterior.1 }}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        <span class="btn btn-primary">{{ mes_nome }} de {{ ano }}</span>
+                        <a href="?ano={{ mes_proximo.0 }}&mes={{ mes_proximo.1 }}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -36,14 +40,14 @@
                             <i class="fas fa-arrow-left me-1"></i>Devolução
                         </span>
                         <span class="badge bg-warning text-dark">
-                            <i class="fas fa-exclamation me-1"></i>Hoje
+                            <i class="fas fa-calendar-day me-1"></i>Hoje
                         </span>
                     </div>
                 </div>
             </div>
 
-            <!-- Calendário -->
-            <div class="card">
+            <!-- Calendário SIMPLIFICADO -->
+            <div class="card border-0 shadow">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-bordered mb-0">
@@ -59,33 +63,48 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for semana in calendario %}
+                                {% for semana in semanas %}
                                 <tr>
                                     {% for dia in semana %}
-                                    <td class="p-2 {% if dia == 0 %}bg-light{% endif %}" 
+                                    
+                                    {% if dia.vazio %}
+                                    <!-- Dia vazio do calendário -->
+                                    <td class="p-2 bg-light" style="height: 120px;"></td>
+                                    
+                                    {% else %}
+                                    <!-- Dia com conteúdo -->
+                                    <td class="p-2 {% if dia.e_hoje %}bg-warning bg-opacity-10{% endif %}" 
                                         style="height: 120px; vertical-align: top;">
-                                        {% if dia != 0 %}
-                                        <div class="d-flex justify-content-between">
-                                            <span class="fw-bold {% if dia == hoje.day and mes == hoje.month and ano == hoje.year %}text-warning{% endif %}">
-                                                {{ dia }}
+                                        
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <span class="fw-bold {% if dia.e_hoje %}text-warning{% endif %}">
+                                                {{ dia.dia_numero }}
                                             </span>
-                                            <small class="text-muted">
-                                                {{ reservas_por_dia|get_item:dia|length|default:0 }}
-                                            </small>
+                                            
+                                            {% if dia.contagem_reservas > 0 %}
+                                            <span class="badge bg-primary rounded-pill">
+                                                {{ dia.contagem_reservas }}
+                                            </span>
+                                            {% endif %}
                                         </div>
                                         
                                         <!-- Reservas do dia -->
-                                        <div class="mt-1">
-                                            {% for info in reservas_por_dia|get_item:dia %}
-                                            <div class="badge {{ info.classe }} mb-1 d-block text-start small p-1"
+                                        {% if dia.reservas %}
+                                        <div class="mt-2">
+                                            {% for reserva_info in dia.reservas %}
+                                            <div class="badge {{ reserva_info.classe }} mb-1 d-block text-start small p-2"
                                                  data-bs-toggle="tooltip" 
-                                                 title="{{ info.reserva.usuario.username }} - {{ info.reserva.carro.nome }}">
-                                                <i class="fas fa-{{ info.tipo == 'retirada'|yesno:'arrow-right,arrow-left' }} me-1"></i>
-                                                #{{ info.reserva.id }}
+                                                 title="{{ reserva_info.tooltip }}"
+                                                 style="cursor: help;">
+                                                <i class="fas fa me-1"></i>
+                                                {{ reserva_info.texto }}
                                             </div>
                                             {% endfor %}
                                         </div>
                                         {% endif %}
+                                        
+                                    {% endif %}
+                                    
                                     </td>
                                     {% endfor %}
                                 </tr>
@@ -95,6 +114,45 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Estatísticas -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2 text-primary"></i>
+                                Como usar o calendário
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>Cada badge colorido representa uma reserva</li>
+                                <li><span class="badge bg-primary">Azul</span> = Retirada do veículo</li>
+                                <li><span class="badge bg-success">Verde</span> = Devolução do veículo</li>
+                                <li>Passe o mouse sobre um badge para ver detalhes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-chart-bar me-2 text-primary"></i>
+                                Resumo do Mês
+                            </h6>
+                            <div class="row small">
+                                <div class="col-6">
+                                    <strong>Reservas:</strong> {{ total_reservas_mes }}
+                                </div>
+                                <div class="col-6">
+                                    <strong>Mês:</strong> {{ mes_nome }}/{{ ano }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
 </div>
@@ -102,12 +160,41 @@
 
 {% block extra_js %}
 <script>
-// Ativar tooltips
 document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    // Ativar tooltips
+    var tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(function(element) {
+        new bootstrap.Tooltip(element);
+    });
+    
+    // Adicionar clique nos badges para abrir detalhes
+    var badges = document.querySelectorAll('.badge[data-bs-toggle="tooltip"]');
+    badges.forEach(function(badge) {
+        badge.addEventListener('click', function() {
+            var title = this.getAttribute('title');
+            if(title) {
+                alert('Detalhes da reserva:\n' + title);
+            }
+        });
+    });
 });
 </script>
+
+<style>
+.table td {
+    transition: background-color 0.2s;
+}
+
+.table td:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.badge {
+    transition: transform 0.2s;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+</style>
 {% endblock %}

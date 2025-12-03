@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     "carros",
     "reserva",
     "pagamento",
+    "usuario",
+    "usuario_admin",
+    "api",
 ]
 
 # MIDDLEWARE ORIGINAL - REATIVE O CSRF

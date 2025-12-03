@@ -20,22 +20,16 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from . import views, views_auth, views_api, views_admin
+from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.home, name="home"),
-    path('cadastro/', views_auth.cadastro, name='cadastro'),
-    path('login/', views_auth.login_usuario, name='login'),
-    path('logout/', views_auth.logout_usuario, name='logout'),
-    path('perfil/', views_auth.perfil, name='perfil'),
-    path('perfil/editar/', views_auth.editar_perfil, name='editar_perfil'),
     path("alugar/", views.alugar, name="alugar"),
+    path('usuario/', include('usuario.urls')),
     path("categorias/", include("categoria.urls")),
     path("reserva/", include("reserva.urls")),
-    path('api/reservas/<int:reserva_id>/atualizar-status/', views_api.atualizar_status_reserva, name='atualizar_status_reserva'),
-    path('perfil/admin/calendario/', views_admin.calendario_reservas, name='calendario_reservas'),
-
+    path("api/", include("api.urls")),
 ]
 
 if settings.DEBUG:

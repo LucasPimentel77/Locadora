@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Cabeçalho -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 fw-bold text-primary">
+                    <i class="fas fa-edit me-2"></i>{{ titulo }}
+                </h1>
+                <a href="{% url 'gerenciar_reservas' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+            
+            <!-- Informações da Reserva -->
+            {% if reserva %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="card-title text-muted mb-3">Informações Atuais</h6>
+                    <div class="row small">
+                        <div class="col-md-6">
+                            <strong>ID:</strong> #{{ reserva.id }}<br>
+                            <strong>Cliente:</strong> {{ reserva.usuario.username }}<br>
+                            <strong>Status:</strong> 
+                            <span class="badge bg-{{ reserva.status == 'pendente'|yesno:'warning,success,primary,secondary,danger' }}">
+                                {{ reserva.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Grupo:</strong> {{ reserva.grupo.nome }}<br>
+                            <strong>Criada em:</strong> {{ reserva.data_criacao|date:"d/m/Y H:i" }}<br>
+                            <strong>Valor Final:</strong> R$ {{ reserva.valor_final|floatformat:2 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Formulário de Edição (SIMPLIFICADO) -->
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <form method="post" novalidate id="reservaForm">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            <p class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row g-3">
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label for="{{ form.status.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.status.label }}
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.status.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Usuário -->
+                            <div class="col-md-6">
+                                <label for="{{ form.usuario.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.usuario.label }}
+                                </label>
+                                {{ form.usuario }}
+                                {% if form.usuario.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.usuario.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Grupo -->
+                            <div class="col-md-6">
+                                <label for="{{ form.grupo.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.grupo.label }}
+                                </label>
+                                {{ form.grupo }}
+                                {% if form.grupo.help_text %}
+                                <small class="form-text text-muted">{{ form.grupo.help_text }}</small>
+                                {% endif %}
+                                {% if form.grupo.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.grupo.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Espaço vazio onde estava o valor_final -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted">
+                                    Valor Final
+                                </label>
+                                <div class="form-control bg-light">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calculator me-1"></i>
+                                        Calculado automaticamente pelo sistema
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Data Retirada -->
+                            <div class="col-md-6">
+                                <label for="{{ form.data_retirada.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.data_retirada.label }}
+                                </label>
+                                {{ form.data_retirada }}
+                                {% if form.data_retirada.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.data_retirada.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Data Devolução -->
+                            <div class="col-md-6">
+                                <label for="{{ form.data_devolucao.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.data_devolucao.label }}
+                                </label>
+                                {{ form.data_devolucao }}
+                                {% if form.data_devolucao.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.data_devolucao.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Calculadora de valor (apenas visual) -->
+                        <div class="alert alert-info mt-4" id="valorInfo" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-calculator me-2"></i>
+                                    <strong>Valor Estimado:</strong>
+                                    <span id="valorEstimado">R$ 0,00</span>
+                                    <small class="text-muted ms-2" id="detalhesValor"></small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Valor final será calculado no pagamento
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                            
+                            {% if reserva %}
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-danger"
+                                        onclick="confirmarExclusao({{ reserva.id }})">
+                                    <i class="fas fa-trash me-1"></i>Excluir
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Aviso -->
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Atenção:</strong> O valor final será calculado automaticamente 
+                pelo sistema de pagamento com base no grupo selecionado e período.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calcular valor estimado em tempo real
+function calcularValorEstimado() {
+    const grupoSelect = document.getElementById('id_grupo');
+    const dataRetirada = document.getElementById('id_data_retirada');
+    const dataDevolucao = document.getElementById('id_data_devolucao');
+    const valorInfo = document.getElementById('valorInfo');
+    const valorEstimadoSpan = document.getElementById('valorEstimado');
+    const detalhesValorSpan = document.getElementById('detalhesValor');
+    
+    // Dados de preço por grupo (poderia vir de uma API)
+    const precosPorGrupo = {
+        // Exemplo: {'1': 89.90, '2': 129.90, ...}
+        // Na prática, você buscaria isso do backend
+    };
+    
+    if (grupoSelect.value && dataRetirada.value && dataDevolucao.value) {
+        const grupoId = grupoSelect.value;
+        const retirada = new Date(dataRetirada.value);
+        const devolucao = new Date(dataDevolucao.value);
+        
+        // Calcular dias
+        const diffTime = Math.abs(devolucao - retirada);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const dias = diffDays < 1 ? 1 : diffDays;
+        
+        // Simular cálculo (na prática, buscar preço do backend)
+        const precoDiaria = 100; // Exemplo fixo
+        const valor = precoDiaria * dias;
+        
+        // Mostrar resultado
+        valorEstimadoSpan.textContent = `R$ ${valor.toFixed(2).replace('.', ',')}`;
+        detalhesValorSpan.textContent = `(${dias} dia${dias > 1 ? 's' : ''} × R$ ${precoDiaria.toFixed(2)})`;
+        valorInfo.style.display = 'block';
+    } else {
+        valorInfo.style.display = 'none';
+    }
+}
+
+// Configurar eventos
+document.addEventListener('DOMContentLoaded', function() {
+    // Preencher datas automáticas
+    const dataRetiradaInput = document.getElementById('id_data_retirada');
+    const dataDevolucaoInput = document.getElementById('id_data_devolucao');
+    
+    if (dataRetiradaInput && !dataRetiradaInput.value) {
+        const amanha = new Date();
+        amanha.setDate(amanha.getDate() + 1);
+        amanha.setHours(8, 0, 0, 0);
+        dataRetiradaInput.value = amanha.toISOString().slice(0, 16);
+    }
+    
+    if (dataDevolucaoInput && !dataDevolucaoInput.value) {
+        const retirada = dataRetiradaInput ? new Date(dataRetiradaInput.value) : new Date();
+        retirada.setDate(retirada.getDate() + 1);
+        retirada.setHours(18, 0, 0, 0);
+        dataDevolucaoInput.value = retirada.toISOString().slice(0, 16);
+    }
+    
+    // Adicionar eventos de cálculo
+    document.getElementById('id_grupo')?.addEventListener('change', calcularValorEstimado);
+    document.getElementById('id_data_retirada')?.addEventListener('change', calcularValorEstimado);
+    document.getElementById('id_data_devolucao')?.addEventListener('change', calcularValorEstimado);
+    
+    // Calcular inicialmente
+    calcularValorEstimado();
+});
+
+// Confirmar exclusão
+function confirmarExclusao(reservaId) {
+    if (confirm('Tem certeza que deseja excluir esta reserva? Esta ação não pode ser desfeita.')) {
+        fetch(`/api/admin/reservas/${reservaId}/excluir/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Reserva excluída com sucesso!');
+                window.location.href = "{% url 'gerenciar_reservas' %}";
+            } else {
+                alert('Erro ao excluir: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erro de conexão: ' + error.message);
+        });
+    }
+}
+</script>
+{% endblock %}
