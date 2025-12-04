@@ -92,15 +92,9 @@ def alugar(request):
                 
                 if carros_disponiveis > 0:
                     subgrupos_disponiveis.append(subgrupo_data)
-                    print(f"✅ ADICIONADO A DISPONÍVEIS: {subgrupo.nome} - {carros_disponiveis} carros")
                 else:
                     subgrupos_indisponiveis.append(subgrupo_data)
-                    print(f"❌ ADICIONADO A INDISPONÍVEIS: {subgrupo.nome}")
 
-            print(f"\n🎯 RESUMO FINAL:")
-            print(f"Disponíveis: {len(subgrupos_disponiveis)} grupos")
-            print(f"Indisponíveis: {len(subgrupos_indisponiveis)} grupos")
-            print("=" * 70)
 
     # SEMPRE passar os dados, independente do método
     context = {
@@ -128,11 +122,9 @@ def verificar_disponibilidade(subgrupo, dt_retirada, dt_devolucao):
     # Total de carros no grupo
     carros_no_grupo = Carro.objects.filter(grupo=subgrupo)
     total_carros = carros_no_grupo.count()
-    print(f"  🚗 Total de carros no grupo: {total_carros}")
     
     # Carros disponíveis (não indisponíveis permanentemente)
     carros_disponiveis_base = carros_no_grupo.filter(disponivel=True).count()
-    print(f"  🟢 Carros disponíveis (base): {carros_disponiveis_base}")
     
     # CONVERTER para timezone-aware (corrige o warning)
     if timezone.is_naive(dt_retirada):
@@ -140,7 +132,6 @@ def verificar_disponibilidade(subgrupo, dt_retirada, dt_devolucao):
     if timezone.is_naive(dt_devolucao):
         dt_devolucao = timezone.make_aware(dt_devolucao)
     
-    print(f"  ⏰ Datas (com timezone): {dt_retirada} → {dt_devolucao}")
     
     # Reservas conflitantes para ESTE GRUPO
     reservas_conflitantes = Reserva.objects.filter(
@@ -151,7 +142,6 @@ def verificar_disponibilidade(subgrupo, dt_retirada, dt_devolucao):
     )
     
     numero_reservas = reservas_conflitantes.count()
-    print(f"  📅 Reservas conflitantes: {numero_reservas}")
     
     # Debug das reservas encontradas
     for reserva in reservas_conflitantes:

@@ -81,13 +81,12 @@ def finalizar_reserva(request, slug_grupo):
 
             # Dados do formulário
             metodo_id = request.POST.get('metodo_pagamento')
-            # O cupom vem do alugar.html, não do escolher_grupo.html
             cupom_codigo = request.session.get('cupom_aplicado', '')  # Buscar da sessão
+
             # Validar dados obrigatórios
             if not metodo_id:
                 messages.error(request, "Selecione uma forma de pagamento.")
                 return redirect('home')
-                # return redirect('escolher_grupo', slug_grupo=slug_grupo)
             
             
             # Buscar método de pagamento

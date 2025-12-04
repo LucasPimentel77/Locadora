@@ -5,9 +5,8 @@ from django.db.models import Min
 # Create your models here.
 
 class Categoria(models.Model):
-     # Choices principais + opção customizada
     EMOJI_CHOICES = [
-        ('', '---------'),  # Opção vazia
+        ('', '---------'),
         ('🚙', '🚙 Hatch/SUV'),
         ('🚗', '🚗 Sedan'),
         ('🛻', '🛻 Picape'),
@@ -41,7 +40,7 @@ class Categoria(models.Model):
         """
         Retorna o menor preço entre todos os grupos desta categoria
         """
-        from carros.models import GrupoCarro  # Import aqui para evitar circular import
+        from carros.models import GrupoCarro 
         
         resultado = GrupoCarro.objects.filter(
             categoria=self,
@@ -54,7 +53,7 @@ class Categoria(models.Model):
         """
         Retorna o maior preço entre todos os grupos desta categoria
         """
-        from carros.models import GrupoCarro  # Import aqui para evitar circular import
+        from carros.models import GrupoCarro 
         
         resultado = GrupoCarro.objects.filter(
             categoria=self,
