@@ -140,8 +140,9 @@ def gerenciar_reservas(request):
     data_fim = request.GET.get('data_fim', '')
     search_query = request.GET.get('q', '')
     
-    # Query base
-    reservas = Reserva.objects.all().select_related(
+    reservas = Reserva.objects.exclude(
+        status='inativo'
+    ).select_related(
         'usuario', 'grupo'
     ).order_by('-data_criacao')
     
@@ -242,5 +243,3 @@ def editar_reserva(request, reserva_id):
     }
     
     return render(request, 'admin/editar_reserva.html', contexto)
-
-

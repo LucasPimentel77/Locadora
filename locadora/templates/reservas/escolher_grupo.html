@@ -174,12 +174,16 @@
                         <!-- Resumo do Valor - ATUALIZADO para cálculo dinâmico -->
                         <div class="border-top pt-3">
                             <div class="d-flex justify-content-between mb-2">
-                                <span>Diária:</span>
+                                <span>Valor por diária:</span>
                                 <span>R$ <span id="valor-diaria">{{ grupo.preco_diaria }}</span></span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
+                                <span>Diárias:</span>
+                                <span id="valor-diaria">{{ diarias }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
                                 <span>Taxas e impostos:</span>
-                                <span>R$ <span id="valor-taxas">25,00</span></span>
+                                <span>R$ <span id="valor-taxas">0,00</span></span>
                             </div>
                             
                             <!-- Desconto dinâmico -->
@@ -192,7 +196,7 @@
                             
                             <div class="d-flex justify-content-between fw-bold fs-5 text-primary">
                                 <span>Total:</span>
-                                <span>R$ <span id="total-final">{{ grupo.preco_diaria|add:25 }}</span></span>
+                                <span>R$ <span id="total-final">{{ valor_diarias }}</span></span>
                             </div>
                         </div>
 
@@ -221,7 +225,7 @@
 
 {% block extra_js %}
 <!-- Dados para JavaScript -->
-<input type="hidden" id="diaria-value" data-value="{{ grupo.preco_diaria }}">
+<input type="hidden" id="diaria-value" data-value="{{ valor_diarias }}">
 <input type="hidden" id="taxas-value" data-value="25">
 
 <script src="{% static 'js/escolher_grupo.js' %}"></script>

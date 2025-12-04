@@ -12,6 +12,7 @@ class Reserva(models.Model):
         ('ativa', 'Ativa'),
         ('concluida', 'Concluída'),
         ('cancelada', 'Cancelada'),
+        ('inativo', 'Inativo'),
     ]
     
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -22,6 +23,10 @@ class Reserva(models.Model):
     pagamento = models.ForeignKey(Pagamento, on_delete=models.SET_NULL, null=True, blank=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
+
+    def set_status(self, novo_status):
+        self.status = novo_status
+        self.save()
     
 
     

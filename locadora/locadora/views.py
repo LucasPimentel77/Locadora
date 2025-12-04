@@ -56,18 +56,13 @@ def alugar(request):
             dt_retirada = timezone.make_aware(dt_retirada)
             dt_devolucao = timezone.make_aware(dt_devolucao)
 
-            # ✅✅✅ ADICIONE ESTAS LINHAS AQUI ✅✅✅
             # SALVAR NA SESSÃO para usar nas próximas views
             request.session['data_retirada'] = f"{data_retirada} {hora_retirada}"
             request.session['data_devolucao'] = f"{data_devolucao} {hora_devolucao}"
             request.session['cupom_aplicado'] = cupom_form
             request.session.modified = True
             
-            print(f"💾 SESSÃO SALVA:")
-            print(f"💾 data_retirada: {request.session['data_retirada']}")
-            print(f"💾 data_devolucao: {request.session['data_devolucao']}")
-            print(f"💾 cupom_aplicado: {request.session['cupom_aplicado']}")
-            # ✅✅✅ FIM DAS LINHAS ADICIONAIS ✅✅✅
+            
 
             # Verificar disponibilidade por subgrupo
             grupos_ativos = GrupoCarro.objects.filter(ativo=True)

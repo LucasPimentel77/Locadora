@@ -16,8 +16,7 @@ def escolher_grupo(request, slug_grupo):
     """Página para escolher o grupo e forma de pagamento"""
     try:
         grupo = GrupoCarro.objects.get(slug=slug_grupo, ativo=True)
-
-        
+   
         # Carros disponíveis neste grupo
         carros_disponiveis = Carro.objects.filter(grupo=grupo, disponivel=True)
         
@@ -28,6 +27,27 @@ def escolher_grupo(request, slug_grupo):
             messages.warning(request, f"Não há carros disponíveis no grupo {grupo.nome} no momento.")
             return redirect('alugar')
         
+        data_retirada = request.session.get('data_retirada')  # Buscar da sessão
+        data_devolucao = request.session.get('data_devolucao')  # Buscar da sessão
+        
+        if not data_retirada or not data_devolucao:
+            messages.error(request, "Datas de retirada e devolução são obrigatórias.")
+            return redirect('alugar')  # Redireciona para preencher datas
+        
+
+        # Converter datas para datetime (já estão no formato correto da sessão)
+        dt_retirada = timezone.make_aware(datetime.strptime(data_retirada, "%Y-%m-%d %H:%M"))
+        dt_devolucao = timezone.make_aware(datetime.strptime(data_devolucao, "%Y-%m-%d %H:%M"))
+        
+        reserva = Reserva.objects.create(
+            usuario=request.user if request.user.is_authenticated else None,
+            grupo=grupo,
+            data_retirada=dt_retirada,
+            data_devolucao=dt_devolucao,
+            status='inativo'
+        )
+        request.session['reserva_id'] = reserva.id  # Salvar o ID da reserva na sessão
+
         # Buscar métodos de pagamento do banco de dados
         metodos_pagamento = Metodo.objects.all()  # Pode adicionar .filter(ativo=True) se quiser
         
@@ -41,6 +61,8 @@ def escolher_grupo(request, slug_grupo):
             'cupons_ativos': cupons_ativos,
             'total_carros': carros_disponiveis.count(),
             'imagem': imagem,
+            'valor_diarias': reserva.valor_diarias(),
+            'diarias': reserva.duracao_dias(),
         }
         
         return render(request, 'reservas/escolher_grupo.html', context)
@@ -54,25 +76,19 @@ def finalizar_reserva(request, slug_grupo):
     if request.method == 'POST':
         try:
             grupo = GrupoCarro.objects.get(slug=slug_grupo, ativo=True)
-            
-            
+            reserva = get_object_or_404(Reserva, id=request.session.get('reserva_id'))
+            reserva.set_status('pendente')
+
             # Dados do formulário
             metodo_id = request.POST.get('metodo_pagamento')
             # O cupom vem do alugar.html, não do escolher_grupo.html
             cupom_codigo = request.session.get('cupom_aplicado', '')  # Buscar da sessão
-            data_retirada = request.session.get('data_retirada')  # Buscar da sessão
-            data_devolucao = request.session.get('data_devolucao')  # Buscar da sessão
-            
-            
             # Validar dados obrigatórios
             if not metodo_id:
                 messages.error(request, "Selecione uma forma de pagamento.")
                 return redirect('home')
                 # return redirect('escolher_grupo', slug_grupo=slug_grupo)
             
-            if not data_retirada or not data_devolucao:
-                messages.error(request, "Datas de retirada e devolução são obrigatórias.")
-                return redirect('home')  # Redireciona para preencher datas
             
             # Buscar método de pagamento
             try:
@@ -95,17 +111,7 @@ def finalizar_reserva(request, slug_grupo):
             
            
             
-            # Converter datas para datetime (já estão no formato correto da sessão)
-            dt_retirada = timezone.make_aware(datetime.strptime(data_retirada, "%Y-%m-%d %H:%M"))
-            dt_devolucao = timezone.make_aware(datetime.strptime(data_devolucao, "%Y-%m-%d %H:%M"))
             
-            reserva = Reserva.objects.create(
-                usuario=request.user if request.user.is_authenticated else None,
-                grupo=grupo,
-                data_retirada=dt_retirada,
-                data_devolucao=dt_devolucao,
-                status='pendente'
-            )
             
             # Criar pagamento
             pagamento = Pagamento.objects.create(
@@ -241,10 +247,15 @@ def verificar_cupom(request):
 @login_required
 def minhas_reservas(request):
     """View para listar reservas do usuário logado"""
+    lista_reservas = []
     reservas = Reserva.objects.filter(usuario=request.user).order_by('-data_criacao')
     
+    for reserva in reservas:
+        if reserva.status != 'inativo':
+            lista_reservas.append(reserva)
+
     context = {
-        'reservas': reservas
+        'reservas': lista_reservas
     }
     return render(request, 'reservas/minhas_reservas.html', context)
 

@@ -6,8 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Apenas para cálculos de desconto (opcional)
     const metodosPagamento = document.querySelectorAll('input[name="metodo_pagamento"]');
     const diaria = parseFloat(document.getElementById('diaria-value').dataset.value);
-    const taxas = 25;
-    const totalSemDesconto = diaria + taxas;
+    const totalSemDesconto = diaria;
 
     // Atualizar totais quando método mudar
     metodosPagamento.forEach(metodo => {
